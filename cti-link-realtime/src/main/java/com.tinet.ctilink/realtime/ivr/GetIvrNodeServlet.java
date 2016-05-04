@@ -13,6 +13,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
 import com.tinet.ctilink.conf.model.EnterpriseArea;
@@ -21,11 +26,7 @@ import com.tinet.ctilink.conf.model.EnterpriseTime;
 import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONArray;
 import com.tinet.ctilink.json.JSONObject;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
 import sun.misc.BASE64Decoder;
 
 
@@ -63,7 +64,6 @@ import sun.misc.BASE64Decoder;
 @SuppressWarnings("serial")
 @Component
 public class GetIvrNodeServlet extends HttpServlet {
-	private final static int IVR_RESULT_MAX_LENGTH = 4096;
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Autowired
@@ -96,13 +96,8 @@ public class GetIvrNodeServlet extends HttpServlet {
 
 		JSONObject jsonObject = getIvrNodeJSON(Integer.parseInt(ccEnterpriseId), Integer.parseInt(ccIvrId), areaCode);
 		String r = jsonObject.toString();
-		if (r != null && r.getBytes().length > IVR_RESULT_MAX_LENGTH) {
-			jsonObject = new JSONObject();
-			jsonObject.put("result_msg", "ivr length over " + IVR_RESULT_MAX_LENGTH);
-			out.append(jsonObject.toString());
-		} else {
-			out.append(r);
-		}
+
+		out.append(r);
 		out.flush();
 		out.close();
 	}
