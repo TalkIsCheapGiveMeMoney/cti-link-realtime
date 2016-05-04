@@ -94,10 +94,12 @@ public class EndpointRealtime {
             res.append(gateway.getDisallow());
             res.append("&allow=");
             res.append(gateway.getAllow());
-            res.append("&dtmf_mode=rfc4733");
-//			res.append(gateway.getDtmfMode());
+            res.append("&dtmf_mode=");
+			res.append(gateway.getDtmfMode());
             res.append("&device_state_busy_at=");
             res.append(gateway.getCallLimit());
+            res.append("&direct_media=no");
+            res.append("&rtp_keepalive=60");
             res.append("\n");
         }
 
