@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -28,6 +29,7 @@ import java.io.PrintWriter;
 	 * http://172.16.203.194/interface/ivr/IsClidValid
 	 * 这个类主要获取clid是否有效信息，如下：
 */
+@Component
 public class IsClidValidServlet extends HttpServlet {
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
@@ -76,7 +78,7 @@ public class IsClidValidServlet extends HttpServlet {
 				}
 			}
 		}
-		if(isClidValidFlag != 1){
+		if (isClidValidFlag != 1) {
 			Caller caller = AreaCodeUtil.updateGetAreaCode(clid, "");
 			
 			if(caller !=null){

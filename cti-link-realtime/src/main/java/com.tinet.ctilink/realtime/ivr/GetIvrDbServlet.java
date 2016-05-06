@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,72 +50,82 @@ public class GetIvrDbServlet extends HttpServlet {
         JSONObject jsonObject = new JSONObject();
 
         int enterpriseId = Integer.parseInt(request.getParameter("enterpriseId"));
+        int ivrId = Integer.parseInt(request.getParameter("ivrId"));
         int enterpriseIvrId = Integer.parseInt(request.getParameter("enterpriseIvrId"));
         String sql = request.getParameter("sql");
 
-        EnterpriseIvr enterpriseIvr = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_IVR_ENTERPRISE_ID_IVR_ID
-                , enterpriseId, enterpriseIvrId), EnterpriseIvr.class);
-        if (enterpriseIvr != null && enterpriseIvr.getEnterpriseId().equals(enterpriseId)) {
-            ObjectMapper mapper = new ObjectMapper();
-            Map<String, String> map = null;
-            try {
-                map = mapper.readValue(enterpriseIvr.getProperty(), Map.class);
-            } catch (Exception e) {
-                logger.error("GetIvrDbServlet.doPost mapper.readValue error:", e);
+        List<EnterpriseIvr> enterpriseIvrList = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_IVR_ENTERPRISE_ID_IVR_ID
+                , enterpriseId, ivrId), EnterpriseIvr.class);
+        if (enterpriseIvrList != null) {
+            EnterpriseIvr enterpriseIvr = null;
+            for (EnterpriseIvr e : enterpriseIvrList) {
+                if (e.getId() == enterpriseIvrId) {
+                    enterpriseIvr = e;
+                    break;
+                }
             }
-            if (map != null && map.size() > 0) {
-                String ivrDbType = map.get("ivr_db_type");
-                String ivrDbUrl = map.get("ivr_db_url");
-                String ivrDbPort = map.get("ivr_db_port");
-                String ivrDbName = map.get("ivr_db_name");
-                String ivrDbUser = map.get("ivr_db_user");
-                String ivrDbPwd = map.get("ivr_db_pwd");
-                String ivrDbVariable = map.get("ivr_db_variable");
-
-                Connection conn = null;
-                PreparedStatement pstmt = null;
-                ResultSet rs = null;
+            if (enterpriseIvr != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                Map map = null;
                 try {
-                    if (ivrDbType.equals(String.valueOf(Const.ENTERPRISE_IVR_OP_ACTION_DB_TYPE_ORACLE))) {//oracle
-                        Class.forName("oracle.jdbc.driver.OracleDriver");
-                        String url = "jdbc:oracle:thin:@" + ivrDbUrl + ":" + ivrDbPort + ":" + ivrDbName;
-                        conn = DriverManager.getConnection(url, ivrDbUser, ivrDbPwd);
-                    } else if (ivrDbType.equals(String.valueOf(Const.ENTERPRISE_IVR_OP_ACTION_DB_TYPE_MYSQL))) {//mysql
-                        Class.forName("com.mysql.jdbc.Driver");
-                        //配置数据源
-                        String url = "jdbc:mysql://" + ivrDbUrl + "/" + ivrDbName;
-                        conn = DriverManager.getConnection(url, ivrDbUser, ivrDbPwd);
-                    } else if (ivrDbType.equals(String.valueOf(Const.ENTERPRISE_IVR_OP_ACTION_DB_TYPE_POSTGRESQL))) {//postgresql
-                        String url = "jdbc:postgresql://" + ivrDbUrl + ":" + ivrDbPort + "/" + ivrDbName;
-                        Class.forName("org.postgresql.Driver");
-                        // 连接数据库
-                        conn = DriverManager.getConnection(url, ivrDbUser, ivrDbPwd);
-                    }
-                    if (conn != null) {
-                        pstmt = conn.prepareStatement(sql);
-                        rs = pstmt.executeQuery();
-                        String variables[] = StringUtils.split(ivrDbVariable, ",");
-                        if (rs.next()) {
-                            for (int i = 0; i < variables.length; i++) {
-                                jsonObject.put(variables[i], rs.getObject(i + 1).toString());
-                            }
-                        }
-                    }
+                    map = mapper.readValue(enterpriseIvr.getProperty(), Map.class);
                 } catch (Exception e) {
-                    logger.error("GetIvrDbServlet.doPost conn error:", e);
-                } finally {
+                    logger.error("GetIvrDbServlet.doPost mapper.readValue error:", e);
+                }
+                if (map != null && map.size() > 0) {
+                    String ivrDbType = map.get("db_type").toString();
+                    String ivrDbUrl = map.get("db_url").toString();
+                    String ivrDbPort = map.get("db_port").toString();
+                    String ivrDbName = map.get("db_name").toString();
+                    String ivrDbUser = map.get("db_user").toString();
+                    String ivrDbPwd = map.get("db_pwd").toString();
+                    String ivrDbVariable = map.get("db_variable").toString();
+
+                    Connection conn = null;
+                    PreparedStatement pstmt = null;
+                    ResultSet rs = null;
                     try {
-                        if (rs != null) {
-                            rs.close();
-                        }
-                        if (pstmt != null) {
-                            pstmt.close();
+                        if (ivrDbType.equals(String.valueOf(Const.ENTERPRISE_IVR_OP_ACTION_DB_TYPE_ORACLE))) {//oracle
+                            Class.forName("oracle.jdbc.driver.OracleDriver");
+                            String url = "jdbc:oracle:thin:@" + ivrDbUrl + ":" + ivrDbPort + ":" + ivrDbName;
+                            conn = DriverManager.getConnection(url, ivrDbUser, ivrDbPwd);
+                        } else if (ivrDbType.equals(String.valueOf(Const.ENTERPRISE_IVR_OP_ACTION_DB_TYPE_MYSQL))) {//mysql
+                            Class.forName("com.mysql.jdbc.Driver");
+                            //配置数据源
+                            String url = "jdbc:mysql://" + ivrDbUrl + "/" + ivrDbName;
+                            conn = DriverManager.getConnection(url, ivrDbUser, ivrDbPwd);
+                        } else if (ivrDbType.equals(String.valueOf(Const.ENTERPRISE_IVR_OP_ACTION_DB_TYPE_POSTGRESQL))) {//postgresql
+                            String url = "jdbc:postgresql://" + ivrDbUrl + ":" + ivrDbPort + "/" + ivrDbName;
+                            Class.forName("org.postgresql.Driver");
+                            // 连接数据库
+                            conn = DriverManager.getConnection(url, ivrDbUser, ivrDbPwd);
                         }
                         if (conn != null) {
-                            conn.close();
+                            pstmt = conn.prepareStatement(sql);
+                            rs = pstmt.executeQuery();
+                            String variables[] = StringUtils.split(ivrDbVariable, ",");
+                            if (rs.next()) {
+                                for (int i = 0; i < variables.length; i++) {
+                                    jsonObject.put(variables[i], rs.getObject(i + 1).toString());
+                                }
+                            }
                         }
                     } catch (Exception e) {
-                        logger.error("GetIvrDbServlet.doPost close error:", e);
+                        logger.error("GetIvrDbServlet.doPost conn error:", e);
+                    } finally {
+                        try {
+                            if (rs != null) {
+                                rs.close();
+                            }
+                            if (pstmt != null) {
+                                pstmt.close();
+                            }
+                            if (conn != null) {
+                                conn.close();
+                            }
+                        } catch (Exception e) {
+                            logger.error("GetIvrDbServlet.doPost close error:", e);
+                        }
                     }
                 }
             }

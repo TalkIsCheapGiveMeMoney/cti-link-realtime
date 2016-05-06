@@ -13,11 +13,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
 import com.tinet.ctilink.conf.model.EnterpriseArea;
@@ -26,7 +21,10 @@ import com.tinet.ctilink.conf.model.EnterpriseTime;
 import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONArray;
 import com.tinet.ctilink.json.JSONObject;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import sun.misc.BASE64Decoder;
 
 
@@ -96,7 +94,6 @@ public class GetIvrNodeServlet extends HttpServlet {
 
 		JSONObject jsonObject = getIvrNodeJSON(Integer.parseInt(ccEnterpriseId), Integer.parseInt(ccIvrId), areaCode);
 		String r = jsonObject.toString();
-
 		out.append(r);
 		out.flush();
 		out.close();
@@ -390,7 +387,7 @@ public class GetIvrNodeServlet extends HttpServlet {
 						break;
 					case 14:/****************************************** 连接数据库节点 ************************************/
 						jsonObject.put(enterpriseIvr.getPath() + "_db_sql", jsonObj.get("db_sql"));
-						jsonObject.put(enterpriseIvr.getPath() + "_next", jsonObj.get("db_sql"));
+						jsonObject.put(enterpriseIvr.getPath() + "_db_next", jsonObj.get("db_next"));
 						jsonObject.put(enterpriseIvr.getPath() + "_db_enterprise_ivr_id", enterpriseIvr.getId());
 
 						break;

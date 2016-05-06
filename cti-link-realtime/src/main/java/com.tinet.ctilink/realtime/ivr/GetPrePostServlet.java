@@ -15,7 +15,6 @@ import com.tinet.ctilink.realtime.util.AreaCodeUtil;
 import com.tinet.ctilink.realtime.util.RouterUtil;
 import org.springframework.stereotype.Component;
 
-
 @Component
 public class GetPrePostServlet extends HttpServlet {
 

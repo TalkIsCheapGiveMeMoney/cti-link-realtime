@@ -93,6 +93,7 @@ public class SaveInvestigationServlet extends HttpServlet {
 		investigationRecord.setClientCrmId(clientCrmId);
 		investigationRecord.setClientName(clientName);
 		investigationRecord.setCustomerNumber(customerNumber);
+
 		//investigationRecordService.saveOrUpdate(investigationRecord);
 
 		out.flush();

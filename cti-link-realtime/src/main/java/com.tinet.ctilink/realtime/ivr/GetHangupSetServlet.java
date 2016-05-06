@@ -48,13 +48,15 @@ public class GetHangupSetServlet extends HttpServlet {
 
 		List<EnterpriseHangupSet> setList = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_HANGUP_SET_ENTERPRISE_ID_TYPE
 				, Integer.parseInt(enterpriseId), type), EnterpriseHangupSet.class);
-		jsonObject.put("hangup_set_count", setList.size());
-		for (int i = 0; i < setList.size(); i++) {
-			jsonObject.put("hangup_set_" + i + "_name",
-					StringEscapeUtils.unescapeHtml4((setList.get(i).getVariableName())));
-			jsonObject.put("hangup_set_" + i + "_value",
-					StringEscapeUtils.unescapeHtml4(setList.get(i).getVariableValue()));
-			jsonObject.put("hangup_set_" + i + "_value_type", setList.get(i).getVariableValueType());
+		if (setList != null) {
+			jsonObject.put("hangup_set_count", setList.size());
+			for (int i = 0; i < setList.size(); i++) {
+				jsonObject.put("hangup_set_" + i + "_name",
+						StringEscapeUtils.unescapeHtml4((setList.get(i).getVariableName())));
+				jsonObject.put("hangup_set_" + i + "_value",
+						StringEscapeUtils.unescapeHtml4(setList.get(i).getVariableValue()));
+				jsonObject.put("hangup_set_" + i + "_value_type", setList.get(i).getVariableValueType());
+			}
 		}
 		out.append(jsonObject.toString());
 		out.flush();

@@ -30,7 +30,6 @@ public class GetTelSetServlet extends HttpServlet {
 		this.doPost(request, response);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		request.setCharacterEncoding("UTF-8");

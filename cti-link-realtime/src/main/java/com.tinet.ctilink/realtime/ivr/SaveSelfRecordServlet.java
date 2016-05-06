@@ -4,6 +4,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.tinet.ctilink.conf.model.EnterpriseVoice;
 import com.tinet.ctilink.conf.service.v1.EnterpriseVoiceService;
 import com.tinet.ctilink.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -22,6 +23,7 @@ import java.util.Date;
  * @since 1.0 创建时间 2011-12-8 下午5:53:31
  * **********************************************
  */
+@Component
 public class SaveSelfRecordServlet extends HttpServlet {
 
     @Reference

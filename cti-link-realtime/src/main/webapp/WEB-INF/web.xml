@@ -228,6 +228,15 @@
 		<url-pattern>/interface/ivr/IsTelNumber</url-pattern>
 	</servlet-mapping>
 
+	<!-- 设置满意度调查接口 -->
+	<servlet>
+		<servlet-name>saveInvestigationServlet</servlet-name>
+		<servlet-class>com.tinet.ctilink.web.DelegatingServletProxy</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>saveInvestigationServlet</servlet-name>
+		<url-pattern>/interface/ivr/SetInvestigation</url-pattern>
+	</servlet-mapping>
 
 	<!-- 保存自助录音信息接口 -->
 	<servlet>
@@ -237,16 +246,6 @@
 	<servlet-mapping>
 		<servlet-name>saveSelfRecordServlet</servlet-name>
 		<url-pattern>/interface/ivr/SaveSelfRecord</url-pattern>
-	</servlet-mapping>
-	
-    <!-- 设置满意度调查接口 -->
-	<servlet>
-		<servlet-name>setInvestigationServlet</servlet-name>
-		<servlet-class>com.tinet.ctilink.web.DelegatingServletProxy</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>setInvestigationServlet</servlet-name>
-		<url-pattern>/interface/ivr/SetInvestigation</url-pattern>
 	</servlet-mapping>
 
 	<!-- 设置满意度调查接口 -->
