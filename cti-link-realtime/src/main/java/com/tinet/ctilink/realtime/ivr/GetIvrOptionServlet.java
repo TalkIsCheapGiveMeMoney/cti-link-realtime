@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.github.pagehelper.StringUtil;
 import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
 import com.tinet.ctilink.conf.model.*;
@@ -137,7 +136,7 @@ public class GetIvrOptionServlet extends HttpServlet {
 			jsonObject.put("__" + Const.ENTERPRISE_ID, String.valueOf(enterpriseId));
 			EnterpriseHotline enterpriseHotline = redisService.get(Const.REDIS_DB_CONF_INDEX
 					, String.format(CacheKey.ENTERPRISE_HOTLINE_ENTERPRISE_ID_NUMBER_TRUNK, enterpriseId, ccTrunkNumber), EnterpriseHotline.class);
-			if( enterpriseHotline != null && StringUtil.isNotEmpty(enterpriseHotline.getHotline())){
+			if( enterpriseHotline != null && StringUtils.isNotEmpty(enterpriseHotline.getHotline())){
 				//根据numberTrunk获取hotline，当numberTrunk对应的hotline不存在时，用numberTrunk区号加numberTrunk代替
 				jsonObject.put(Const.CDR_HOTLINE, enterpriseHotline.getHotline());
 			}else{
@@ -175,7 +174,7 @@ public class GetIvrOptionServlet extends HttpServlet {
 
 					if(callType.equals(String.valueOf(Const.CDR_CALL_TYPE_OB_WEBCALL))){
 
-						if(StringUtil.isNotEmpty(webcallIvrId)){
+						if(StringUtils.isNotEmpty(webcallIvrId)){
 							jsonObject.put("__" + Const.IVR_ID, webcallIvrId);
 							jsonObject.put(Const.VALID_IVR, "1");
 						}else{
@@ -233,7 +232,7 @@ public class GetIvrOptionServlet extends HttpServlet {
 								boolean trunkBl = false;
 								boolean accordingWeek = false;
 								boolean accordingSpecialDate = false;
-								if (StringUtil.isNotEmpty(ruleTime)) {
+								if (StringUtils.isNotEmpty(ruleTime)) {
 									String ruleTimes[] = StringUtils.split(ruleTime, ";");
 									for(int i=0; i<ruleTimes.length; i++){
 										Integer timeId = Integer.parseInt(ruleTimes[i]);
@@ -264,7 +263,7 @@ public class GetIvrOptionServlet extends HttpServlet {
 								}
 								String ruleAreaNumbers[] = StringUtils.split(ruleAreaNumber, ";");
 								String ruleTrunkNumbers[] = StringUtils.split(ruleTrunkNumber, ";");
-								if (StringUtil.isNotEmpty(ruleAreaNumber)) {
+								if (StringUtils.isNotEmpty(ruleAreaNumber)) {
 									for (int i = 0; i < ruleAreaNumbers.length; i++) {
 										areaBl = caller.getCallerNumber().startsWith(ruleAreaNumbers[i]);
 										if (areaBl) {
@@ -272,7 +271,7 @@ public class GetIvrOptionServlet extends HttpServlet {
 										}
 									}
 								}
-								if (StringUtil.isNotEmpty(ruleTrunkNumber)) {
+								if (StringUtils.isNotEmpty(ruleTrunkNumber)) {
 									for (int i = 0; i < ruleTrunkNumbers.length; i++) {
 										trunkBl = ruleTrunkNumbers[i].equals(ccTrunkNumber);
 										if (trunkBl) {
@@ -281,9 +280,9 @@ public class GetIvrOptionServlet extends HttpServlet {
 									}
 								}
 
-								if ((accordingWeek || accordingSpecialDate) || StringUtil.isEmpty(ruleTime)) {
-									if (areaBl || StringUtil.isEmpty(ruleAreaNumber)) {
-										if (trunkBl || StringUtil.isEmpty(ruleTrunkNumber)) {
+								if ((accordingWeek || accordingSpecialDate) || StringUtils.isEmpty(ruleTime)) {
+									if (areaBl || StringUtils.isEmpty(ruleAreaNumber)) {
+										if (trunkBl || StringUtils.isEmpty(ruleTrunkNumber)) {
 											jsonObject.put("" + Const.IVR_ROUTER_TYPE, ruleType);
 											switch (ruleType) {
 												case 1://******************1:IVR*****************************//*
