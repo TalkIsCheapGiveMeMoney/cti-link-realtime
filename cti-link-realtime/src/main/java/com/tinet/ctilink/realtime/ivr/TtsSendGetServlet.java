@@ -44,12 +44,14 @@ public class TtsSendGetServlet extends HttpServlet {
         String ttsText = request.getParameter("ttsText");
         String enterpriseId = request.getParameter("enterprsieId");
         String uniqueId = request.getParameter("uniqueId");
+        String vid=request.getParameter("vid");
 
         LogTts logTts = new LogTts();
         logTts.setEnterpriseId(Integer.parseInt(enterpriseId));
         logTts.setRequestTime(new Date());
         logTts.setCallFrom(Const.LOG_TTS_CALL_FROM_DIALPLAN);
-        String res = TtsSendGetUtil.ttsSendGet(uniqueId, ttsText, true, logTts);
+        StringBuffer ttsUrlList=new StringBuffer("");
+        String res = TtsSendGetUtil.ttsSendGet(uniqueId, ttsText, vid, true, logTts, ttsUrlList);
         if (StringUtils.isNotEmpty(res)) {
             jsonObject.put("TTS_FILE", res);
             redisService.incrby(Const.REDIS_DB_CTI_INDEX, "system.tts.success_count", 1);
