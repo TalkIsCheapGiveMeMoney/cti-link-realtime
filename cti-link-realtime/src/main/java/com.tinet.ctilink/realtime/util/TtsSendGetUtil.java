@@ -1,14 +1,13 @@
-package com.tinet.ctilink.realtime.util;
+package com.tinet.ccic.util;
 
-import com.tinet.ctilink.realtime.entity.LogTts;
-import com.tinet.ctilink.cache.CacheKey;
-import com.tinet.ctilink.cache.RedisService;
-import com.tinet.ctilink.conf.model.SystemSetting;
-import com.tinet.ctilink.inc.Const;
-import com.tinet.ctilink.util.ContextUtil;
-import com.tinet.ctilink.util.DateUtil;
-import com.tinet.ctilink.util.MD5Encoder;
-import org.apache.commons.lang3.StringUtils;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -21,20 +20,27 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tinet.ctilink.util.ContextUtil;
+import com.tinet.ctilink.util.DateUtil;
+import com.tinet.ctilink.util.MD5Encoder;
+import com.tinet.ctilink.util.SystemCmd;
+
 
 public class TtsSendGetUtil {
-	static String soundPath = "/var/nfs/tts_cache";
-	static String soundPathNoac = "/var/nfs/tts_cache_noac";
-	static String logPath = "/var/log/ccic/ttsc";
-	static String noFile = "/var/lib/ivr_voice/no";
 
+	static String logPath = "/var/log/ccic/ttsc";
+	
+	static String ttsGetURL = "/interface/v2/ttsGet";
+	static String ttsWaitURL = "/interface/v2/ttsWait";
+	
+
+	public static void init(){
+		SystemCmd.executeCmd("mkdir -p " + logPath);
+	}
 	public static void ttsLog(String logFile, String uniqueId, String msg){
-		//TODO 改成存到kv里面
 		File logFileFile=new File(logFile);
 		
 		try{
@@ -50,7 +56,7 @@ public class TtsSendGetUtil {
 		}
 	}
 	
-	public static String ttsSendGet(String uniqueId, String ttsText, boolean returnFile, LogTts logTts){
+	public static String ttsSendGet(String uniqueId, String ttsText,String ttslanguagetype, boolean returnFile, LogTts logTts,StringBuffer ttsurllists){
 		logTts.setStartTime(new Date());
 		logTts.setText(ttsText);
 		logTts.setUniqueId(uniqueId);
@@ -58,20 +64,22 @@ public class TtsSendGetUtil {
 		
 		String day = DateUtil.format(new Date(), DateUtil.FMT_DATE_YYYY_MM_DD);
 	    String logFile = logPath + "/" + "ttsc_send.log." + day;
-		RedisService redisService = (RedisService) ContextUtil.getContext().getBean("redisService");
-		SystemSetting systemSetting = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.SYSTEM_SETTING_NAME, Const.SYSTEM_SETTING_NAME_TTSSC_URL)
-				, SystemSetting.class);
+		SystemSettingDao systemSettingDao = (SystemSettingDao)ContextUtil.getContext().getBean("systemSettingDao");
+		SystemSetting systemSetting = systemSettingDao.getFromRedisByName(Const.SYSTEM_SETTING_NAME_TTSSC_URL);
 		//String TTSC_URL = "http://internal-vocp-ttssc-internal-8477452.cn-north-1.elb.amazonaws.com.cn/interface/ttsGet";
-		String TTSC_URL = systemSetting.getValue() + "/interface/ttsGet";
+		String TTSC_GET_URL = systemSetting.getValue() + ttsGetURL;
+		
+		String vidtype = ttslanguagetype;
 		
 		Integer timeout = 10;
-		CloseableHttpClient httpclient = HttpClients.createDefault();
-		
+		CloseableHttpClient httpclient = HttpClients.createDefault();		
+
 		Long deadLine = new Date().getTime() + timeout * 1000;
 		StringBuilder returnFileList = new StringBuilder();
 		List<String> httpFailCurlList = new ArrayList<String>();
 		List<String> httpFailAgainCurlList = new ArrayList<String>();
 		List<String> needCheckList = new ArrayList<String>();
+		List<String> ttsUrlPathList = new ArrayList<String>();
 		if(StringUtils.isNotEmpty(ttsText)){
 			ttsLog(logFile, uniqueId, "开始转换ttsText:" + ttsText);
 			ttsText = ttsText.replace("\"", "").replace(","," ").replace("."," ").replace(";"," ").replace(":"," ").replace("!"," ").replace("?"," ")
@@ -85,58 +93,12 @@ public class TtsSendGetUtil {
 					continue;
 				}
 				String md5 = MD5Encoder.encode(text);
-				String md5File = soundPath + "/" + md5.substring(0, 2) + "/" + md5 + ".wav";
-				String md5FileNoac = soundPathNoac + "/" + md5.substring(0, 2) + "/" + md5 + ".wav";
+				String md5key = vidtype+"-" + md5;
 				
-				File file = new File(md5File);
-				File fileNoac = new File(md5FileNoac);
-				try{
-					if(file.exists()){
-						/* 暂时取消文件格式检查
-						FileInputStream fin = new FileInputStream(md5File);
-						byte[] wavHead = new byte[44];
-						if(fin.read(wavHead, 0, 44) == 44){
-							fin.close();
-							byte[] waveFmt = new byte[8];
-							for(int i=0;i<8;i++){
-								waveFmt[i] = wavHead[8+i];
-							}
-							if(new String(waveFmt).trim().equals("WAVEfmt")){
-								ttsLog(logFile, uniqueId, "分片:" + text + " md5:" + md5File + " 存在,格式正确!");
-								continue;
-							}else{
-								ttsLog(logFile, uniqueId, "分片:" + text + " md5:" + md5File + " 存在,格式不正确!");
-							}
-						}
-						fin.close();
-				        file.delete();
-				        */
-						hitCacheCount++;
-						returnFileList.append(soundPath + "/" + md5.substring(0, 2) + "/" + md5 + "&" + noFile + "&");
-						ttsLog(logFile, uniqueId, "分片:" + text + " md5:" + md5File + " 存在!");
-						continue;
-					}else if(fileNoac.exists()){
-						if(returnFile){
-							returnFileList.append(soundPathNoac + "/" + md5.substring(0, 2) + "/" + md5 + "&" + noFile + "&");
-						}else{
-							returnFileList.append(soundPathNoac + "/" + md5.substring(0, 2) + "/" + md5 + "&" + noFile + "&");
-						}
-						hitCacheCount++;
-						ttsLog(logFile, uniqueId, "分片:" + text + " md5:" + md5File + " 存在!");
-						continue;
-					}else{
-						if(returnFile){
-							returnFileList.append(soundPathNoac + "/" + md5.substring(0, 2) + "/" + md5 + "&" + noFile + "&");
-						}else{
-							returnFileList.append(soundPath + "/" + md5.substring(0, 2) + "/" + md5 + "&" + noFile + "&");
-						}
-						ttsLog(logFile, uniqueId, "分片:" + text + " md5:" + md5File + " 不存在");
-					}
-				}catch(Exception e){
-					e.printStackTrace();
-				}
-				needCheckList.add(md5FileNoac);
-				//文件不存在
+				returnFileList.append(vidtype+"/" + md5.substring(0, 2) + "/" + md5 + ";");
+				
+
+				//发送ttsget请求，检查响应消息是否成功
 				List<NameValuePair> list = new ArrayList<NameValuePair>();
 				BasicNameValuePair nv = null;
 				nv = new BasicNameValuePair("text", text);
@@ -147,7 +109,7 @@ public class TtsSendGetUtil {
 				list.add(nv);
 				nv = new BasicNameValuePair("timeout", String.valueOf(timeout));
 				list.add(nv);
-				nv = new BasicNameValuePair("vid", "1");
+				nv = new BasicNameValuePair("vid", vidtype);
 				list.add(nv);
 				nv = new BasicNameValuePair("volume", "10");
 				list.add(nv);
@@ -155,7 +117,7 @@ public class TtsSendGetUtil {
 				list.add(nv);
 				nv = new BasicNameValuePair("sync", "0");
 				list.add(nv);
-				String curl = TTSC_URL + "?" + URLEncodedUtils.format(list, HTTP.UTF_8);
+				String curl = TTSC_GET_URL + "?" + URLEncodedUtils.format(list, HTTP.UTF_8);
 				
 				HttpResponse response = null;
 				HttpGet httpGet = new HttpGet(curl);
@@ -167,9 +129,38 @@ public class TtsSendGetUtil {
 					 //解析返回
 					HttpEntity entity = response.getEntity();
 		        	Integer statusCode = response.getStatusLine().getStatusCode();
-		        	String res = EntityUtils.toString(entity, "UTF-8");
-		        	if(statusCode.equals(200) && "success".equals(res)){
+		        	String res = EntityUtils.toString(entity, "UTF-8");  
+		        	ObjectMapper mapper = new ObjectMapper();
+		    		HashMap<String, String> map = null;
+		    		try {
+		    			map= mapper.readValue(res, HashMap.class);			
+		    		} catch (JsonParseException e) {
+		    			e.printStackTrace();
+		    		} catch (JsonMappingException e) {
+		    			e.printStackTrace();
+		    		} catch (IOException e) {
+		    			e.printStackTrace();
+		    		}
+		        	if(statusCode.equals(200) && "0".equals(map.get("result"))){
 		        		ttsLog(logFile, uniqueId, "分片:" + text + " 请求url:" + curl + " 成功");
+		        		String ttsUrlPath = map.get("url");
+	        			if(StringUtil.isNotEmpty(ttsUrlPath))
+	        				ttsUrlPathList.add(ttsUrlPath);
+		        		
+		        		if("0".equals(map.get("hitCache")))
+		        		{
+		        			String needchecking = map.get("key");
+		        			if(StringUtil.isNotEmpty(needchecking))
+		        				needCheckList.add(needchecking);
+		        			ttsLog(logFile, uniqueId, "分片:" + text + " md5:" + needchecking + " 不存在");		        			
+		        		}
+		        		else if("1".equals(map.get("hitCache")))
+		        		{
+		        			hitCacheCount++;
+				            ttsLog(logFile, uniqueId, "分片:" + text + " md5:" + md5 + " 存在!");				            
+							continue;
+		        		}
+		        		
 		        	}else{
 		        		httpFailCurlList.add(curl);
 		        		ttsLog(logFile, uniqueId, "分片:" + text + " 请求url:" + curl + " 失败 statusCode:" + statusCode + " res:" + res);
@@ -197,12 +188,43 @@ public class TtsSendGetUtil {
 					 //解析返回
 					HttpEntity entity = response.getEntity();
 		        	Integer statusCode = response.getStatusLine().getStatusCode();
-		        	String res = EntityUtils.toString(entity, "UTF-8");
-		        	if(statusCode.equals(200) && "success".equals(res)){
-		        		ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 成功");
+		        	String res = EntityUtils.toString(entity, "UTF-8"); 
+	        	
+		        	ObjectMapper mapper = new ObjectMapper();
+		    		
+		    		HashMap<String, String> map = null;
+		    		try {
+		    			map= mapper.readValue(res, HashMap.class);			
+		    		} catch (JsonParseException e) {
+		    			e.printStackTrace();
+		    		} catch (JsonMappingException e) {
+		    			e.printStackTrace();
+		    		} catch (IOException e) {
+		    			e.printStackTrace();
+		    		}
+		    		
+		    		if(statusCode.equals(200) && "0".equals(map.get("result"))){
+		    			ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 成功");
+		        		String ttsUrlPath = map.get("url");
+	        			if(StringUtil.isNotEmpty(ttsUrlPath))
+	        				ttsUrlPathList.add(ttsUrlPath);
+		        		
+		        		if("0".equals(map.get("hitCache")))
+		        		{
+		        			String needchecking = map.get("key");
+		        			if(StringUtil.isNotEmpty(needchecking))
+		        				needCheckList.add(needchecking);
+		        				        			
+		        		}
+		        		else if("1".equals(map.get("hitCache")))
+		        		{
+		        			hitCacheCount++;				           			            
+							continue;
+		        		}
+		        		
 		        	}else{
 		        		httpFailAgainCurlList.add(failCurl);
-		        		ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 失败 statusCode:" + statusCode + " res:" + res);
+		        		ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 失败 statusCode:" + statusCode + " res:" + map.get("result"));
 		        	}
 				}catch(Exception e){
 					e.printStackTrace();
@@ -226,11 +248,42 @@ public class TtsSendGetUtil {
 					 //解析返回
 					HttpEntity entity = response.getEntity();
 		        	Integer statusCode = response.getStatusLine().getStatusCode();
-		        	String res = EntityUtils.toString(entity, "UTF-8");
-		        	if(statusCode.equals(200) && "success".equals(res)){
-		        		ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 成功");
-		        	}else{
-		        		ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 失败 statusCode:" + statusCode + " res:" + res);
+		        	String res = EntityUtils.toString(entity, "UTF-8"); 
+		        	ObjectMapper mapper = new ObjectMapper();
+		    		
+		    		HashMap<String, String> map = null;
+		    		try {
+		    			map= mapper.readValue(res, HashMap.class);			
+		    		} catch (JsonParseException e) {
+		    			e.printStackTrace();
+		    		} catch (JsonMappingException e) {
+		    			e.printStackTrace();
+		    		} catch (IOException e) {
+		    			e.printStackTrace();
+		    		}
+		    		
+		    		if(statusCode.equals(200) && "0".equals(map.get("result"))){
+		    			ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 成功");
+		        		String ttsUrlPath = map.get("url");
+	        			if(StringUtil.isNotEmpty(ttsUrlPath))
+	        				ttsUrlPathList.add(ttsUrlPath);
+		        		
+		        		if("0".equals(map.get("hitCache")))
+		        		{
+		        			String needchecking = map.get("key");
+		        			if(StringUtil.isNotEmpty(needchecking))
+		        				needCheckList.add(needchecking);
+		        				        			
+		        		}
+		        		else if("1".equals(map.get("hitCache")))
+		        		{
+		        			hitCacheCount++;				           			            
+							continue;
+		        		}
+		        		
+		        	}else{		        		
+		        		httpFailAgainCurlList.add(failCurl);
+		        		ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 失败 statusCode:" + statusCode + " res:" + map.get("result"));
 		        	}
 				}catch(Exception e){
 					e.printStackTrace();
@@ -242,34 +295,65 @@ public class TtsSendGetUtil {
 					return "";
 				}
 			}
-			while(true){
-				if(new Date().getTime() > deadLine){
-					logTts.setResult(-2);
-					ttsLog(logFile, uniqueId, "等待合成文件超时 ttsText=" + ttsText);
-					logTts.setEndTime(new Date());
-					return "";
-				}
-				boolean needWait = false;
-				for(String md5File: needCheckList){
-					File file = new File(md5File);
+
+				
+				String needCheckingKey = StringUtil.join(needCheckList,",");
+				ttsLog(logFile, uniqueId, "需要检查是否转化成功的keys=" + needCheckingKey);
+				if(StringUtil.isNotEmpty(needCheckingKey))
+				{
+					
+					String TTSC_WAIT_URL = systemSetting.getValue() + ttsWaitURL;
+					HttpResponse response = null;
+					
+					//发送ttsget请求，检查响应消息是否成功
+					List<NameValuePair> list = new ArrayList<NameValuePair>();
+					BasicNameValuePair nv = null;
+					nv = new BasicNameValuePair("keys", needCheckingKey);					
+					list.add(nv);
+					String curl = TTSC_WAIT_URL + "?" + URLEncodedUtils.format(list, HTTP.UTF_8);
+					ttsLog(logFile, uniqueId, "TTSC_WAIT_URL=" + curl);
+					HttpGet httpGet = new HttpGet(curl);
+					int socketTimeout = timeout * 1000;
+					RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(2000).build();
+					httpGet.setConfig(requestConfig);
 					try{
-						if(!file.exists()){
-							needWait = true;
-							break;
-						}
+						response = httpclient.execute(httpGet);
+						 //解析返回
+						HttpEntity entity = response.getEntity();
+			        	Integer statusCode = response.getStatusLine().getStatusCode();
+			        	String res = EntityUtils.toString(entity, "UTF-8"); 
+			        	ObjectMapper mapper = new ObjectMapper();
+			    		
+			    		HashMap<String, String> map = null;
+			    		try {
+			    			map= mapper.readValue(res, HashMap.class);			
+			    		} catch (JsonParseException e) {
+			    			e.printStackTrace();
+			    		} catch (JsonMappingException e) {
+			    			e.printStackTrace();
+			    		} catch (IOException e) {
+			    			e.printStackTrace();
+			    		}
+			        	if(statusCode.equals(200) && "0".equals(map.get("result"))){
+			        		ttsLog(logFile, uniqueId, "keys"+ needCheckingKey +" 请求url:" + curl + " 成功");
+			        	}
+			        	else
+			        	{
+			        		logTts.setResult(-2);
+			        		ttsLog(logFile, uniqueId, "keys"+ needCheckingKey +" 请求url:" + curl + " 等待合成文件超时");
+
+							logTts.setEndTime(new Date());
+							return "";
+			        	}
+			        	
 					}catch(Exception e){
 						e.printStackTrace();
+						ttsLog(logFile, uniqueId, "等待合成文件超时 ttsText=" + ttsText);
+						return "";
 					}
+					
 				}
-				if(needWait){
-					try{
-						Thread.sleep(500);
-					}catch(Exception e){
-						e.printStackTrace();
-					}
-				}else{
-					break;
-				}
+				
 			}
 			ttsLog(logFile, uniqueId, "合成文件完成 ttsText=" + ttsText);
 		}
@@ -277,6 +361,10 @@ public class TtsSendGetUtil {
 		logTts.setEndTime(new Date());
 		
 		if(returnFileList.toString().length() > 0){
+			
+			String ttsurllist = StringUtil.join(ttsUrlPathList,";");
+			if(StringUtil.isNotEmpty(ttsurllist))
+				ttsurllists.append(ttsurllist);
 			return returnFileList.toString().substring(0, returnFileList.toString().length()-1);
 		}
 		return "";
