@@ -3,6 +3,7 @@ package com.tinet.ctilink.realtime.ivr;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -73,7 +74,7 @@ public class GetInvestigationServlet extends HttpServlet {
 						jsonObject.put("sv_" + investigation.getPath() + "_select_retries", jsonObj.get("select_retries"));
 						JSONArray jsonSelectArray = JSONArray.fromObject(jsonObj.get("select"));
 						for(int i = 0; i < jsonSelectArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonSelectArray.get(i);
+							Map jsonTmp = (Map)jsonSelectArray.get(i);
 							String key = jsonTmp.get("key").toString();
 							String next = jsonTmp.get("next").toString();
 							jsonObject.put("sv_" + investigation.getPath() + "_select_" + key + "_next", next);

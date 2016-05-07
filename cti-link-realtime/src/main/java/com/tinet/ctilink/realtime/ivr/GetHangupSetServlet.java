@@ -13,15 +13,13 @@ import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
 import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONObject;
-import com.tinet.ctilink.conf.model.TelSet;
-import com.tinet.ctilink.conf.model.TelSetTel;
-import org.apache.commons.lang3.StringUtils;
+import com.tinet.ctilink.conf.model.EnterpriseHangupSet;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-
 @Component
-public class GetTelSetServlet extends HttpServlet {
+public class GetHangupSetServlet extends HttpServlet {
 
 	@Autowired
 	RedisService redisService;
@@ -30,7 +28,6 @@ public class GetTelSetServlet extends HttpServlet {
 		this.doPost(request, response);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		request.setCharacterEncoding("UTF-8");
@@ -39,27 +36,27 @@ public class GetTelSetServlet extends HttpServlet {
 		JSONObject jsonObject = new JSONObject();
 
 		String enterpriseId = request.getParameter("enterpriseId");
-		String tsno = request.getParameter("telSet");
+		String callType = request.getParameter("callType");
+		Integer type;
+		// 判断外呼或呼入挂机推送
+		if (String.valueOf(Const.CDR_CALL_TYPE_IB).equals(callType)
+				|| String.valueOf(Const.CDR_CALL_TYPE_OB_WEBCALL).equals(callType)) {
+			type = Const.HANGUP_SET_TYPE_IB;
+		} else {
+			type = Const.HANGUP_SET_TYPE_OB;
+		}
 
-		if (!StringUtils.isEmpty(tsno)) {
-			TelSet telset = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.TEL_SET_ENTERPRISE_ID_TSNO, Integer.parseInt(enterpriseId), tsno)
-					, TelSet.class);
-			if (telset != null) {
-				List<TelSetTel> telSetTelList = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.TEL_SET_TEL_ENTERPRISE_TSNO, Integer.parseInt(enterpriseId), tsno)
-						, TelSetTel.class);
-				if (!telset.getIsStop().equals(Const.TEL_SET_STATUS_STOP)) {
-					String telStr = "";
-					int count = 0;
-					for (TelSetTel t : telSetTelList) {
-						telStr += t.getTel() + "," + t.getTimeout() + ";";
-						count++;
-					}
-					jsonObject.put("tel_set_count", count);
-					jsonObject.put("tel_set_timeout", telset.getTimeout());
-					jsonObject.put("tel_set_strategy", telset.getStrategy());
-					jsonObject.put("tel_set_tel", telStr.substring(0, telStr.length() - 1));
-				}
-				}
+		List<EnterpriseHangupSet> setList = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_HANGUP_SET_ENTERPRISE_ID_TYPE
+				, Integer.parseInt(enterpriseId), type), EnterpriseHangupSet.class);
+		if (setList != null) {
+			jsonObject.put("hangup_set_count", setList.size());
+			for (int i = 0; i < setList.size(); i++) {
+				jsonObject.put("hangup_set_" + i + "_name",
+						StringEscapeUtils.unescapeHtml4((setList.get(i).getVariableName())));
+				jsonObject.put("hangup_set_" + i + "_value",
+						StringEscapeUtils.unescapeHtml4(setList.get(i).getVariableValue()));
+				jsonObject.put("hangup_set_" + i + "_value_type", setList.get(i).getVariableValueType());
+			}
 		}
 		out.append(jsonObject.toString());
 		out.flush();

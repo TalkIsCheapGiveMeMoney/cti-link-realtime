@@ -29,7 +29,7 @@ public class ClidUtil {
                 , EnterpriseClid.class);
 
         String resClid = "";
-        int clidType = 0;
+        int clidType;
         String clidNumber = "";
         if(enterpriseClid != null){
             switch(routerClidCallType){
