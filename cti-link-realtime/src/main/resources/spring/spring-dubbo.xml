@@ -19,6 +19,4 @@
 		<context:include-filter type="annotation" expression="com.alibaba.dubbo.config.annotation.Service" />
 	</context:component-scan>
 
-	<dubbo:reference id="enterpriseVoiceService" interface="com.tinet.ctilink.conf.service.v1.EnterpriseVoiceService" />
-
 </beans>
