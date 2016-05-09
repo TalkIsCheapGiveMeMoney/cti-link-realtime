@@ -24,6 +24,7 @@ public class LogTts implements java.io.Serializable {
 	private Integer result;
 	private Date createTime;
 	private Integer callFrom;
+	private Integer vid;
 
 	// Constructors
 
@@ -111,4 +112,13 @@ public class LogTts implements java.io.Serializable {
 	public void setCallFrom(Integer callFrom) {
 		this.callFrom = callFrom;
 	}
+
+	public Integer getVid() {
+		return vid;
+	}
+
+	public void setVid(Integer vid) {
+		this.vid = vid;
+	}
+	
 }
