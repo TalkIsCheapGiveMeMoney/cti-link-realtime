@@ -35,19 +35,19 @@ public class IsTelNumberServlet extends HttpServlet {
 		String telNumber = request.getParameter("tel");
 		
 		if(StringUtils.isEmpty(telNumber)) {
-			responseRes(response,"0", "提交失败，tel不能为空");
+			responseRes(response,"-1", "提交失败，tel不能为空");
 			return ;
 		}else{
 			if (!StringUtils.isNumeric(telNumber)) {
-				responseRes(response, "0", "提交失败，参数tel格式不正确");
+				responseRes(response, "-1", "提交失败，参数tel格式不正确");
 				return ;
 			}
 		}
 		 if(Pattern.compile(Const.TEL_NUMBER_VALIDATION).matcher(telNumber).find()){
-				responseRes(response,"1", "tel符合号码规则");
+				responseRes(response,"0", "tel符合号码规则");
 				return;
 		 }else{
-				responseRes(response,"0", "tel不符合号码规则");
+				responseRes(response,"-1", "tel不符合号码规则");
 				return;
 		 }
 	}

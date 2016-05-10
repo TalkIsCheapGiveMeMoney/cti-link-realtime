@@ -66,7 +66,7 @@ public class IsClidValidServlet extends HttpServlet {
 				return ;
 			}
 		}
-		Integer isClidValidFlag = 0;
+		Integer isClidValidFlag = -1;
 
 		EnterpriseSetting setting = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME
 				, Integer.parseInt(enterpriseId), Const.ENTERPRISE_SETTING_NAME_CLID_LIST), EnterpriseSetting.class);
@@ -74,11 +74,11 @@ public class IsClidValidServlet extends HttpServlet {
 			String[] clidArray = setting.getValue().split(",");
 			for(String str: clidArray){
 				if(clid.equals(str)){
-					isClidValidFlag = 1;
+					isClidValidFlag = 0;
 				}
 			}
 		}
-		if (isClidValidFlag != 1) {
+		if (isClidValidFlag != 0) {
 			Caller caller = AreaCodeUtil.updateGetAreaCode(clid, "");
 			
 			if(caller !=null){
@@ -87,7 +87,7 @@ public class IsClidValidServlet extends HttpServlet {
 				if(trunk != null && StringUtils.isNotEmpty(caller.getAreaCode()) && clid.startsWith(caller.getAreaCode())){
 					if(trunk.getAreaCode() != null && trunk.getAreaCode().equals(caller.getAreaCode()) 
 							&& trunk.getEnterpriseId() != null && Integer.toString(trunk.getEnterpriseId()).equals(enterpriseId)){
-						isClidValidFlag = 1;
+						isClidValidFlag = 0;
 					}
 				}
 			}

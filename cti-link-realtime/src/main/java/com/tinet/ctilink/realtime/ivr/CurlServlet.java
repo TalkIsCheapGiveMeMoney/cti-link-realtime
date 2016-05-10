@@ -56,7 +56,7 @@ public class CurlServlet extends HttpServlet {
 			timeout = Integer.parseInt(request.getParameter("timeout"));
 		} catch (Exception e) {
 			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("curl_result", 0);
+			jsonObject.put("curl_result", -1);
 			jsonObject.put("msg", "参数格式错误");
 			out.append(jsonObject.toString());
 			out.flush();
@@ -76,7 +76,7 @@ public class CurlServlet extends HttpServlet {
 		String method = request.getParameter("method");
 		if (StringUtils.isEmpty(url) || StringUtils.isEmpty(sync)) {
 			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("curl_result", 0);
+			jsonObject.put("curl_result", -1);
 			jsonObject.put("msg", "缺少参数");
 			out.append(jsonObject.toString());
 			out.flush();
@@ -135,7 +135,7 @@ public class CurlServlet extends HttpServlet {
 			curlData.setLevel(0);
 			CurlPushClient.addPushQueue(curlData);
 			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("curl_result", 1);
+			jsonObject.put("curl_result", 0);
 			out.append(jsonObject.toString());
 			out.flush();
 			out.close();
