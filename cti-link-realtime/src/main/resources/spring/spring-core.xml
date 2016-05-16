@@ -24,7 +24,7 @@
 	</bean>
 
 	<!-- 定义Spring Redis连接工厂 -->
-	<bean id="redisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+	<bean id="redisConnectionFactory" class="com.tinet.ctilink.jedis.CtiLinkJedisConnectionFactory">
 		<property name="hostName" value="${redis.url}" />
 		<property name="port" value="${redis.port}" />
 		<property name="database" value="1" />
@@ -33,9 +33,12 @@
 	</bean>
 
 
-	<bean id="redisService" class="com.tinet.ctilink.cache.RedisService" >
+	<bean id="redisTemplate" class="com.tinet.ctilink.cache.RedisTemplate">
 		<property name="connectionFactory" ref="redisConnectionFactory" />
 	</bean>
+
+	<bean id="redisService" class="com.tinet.ctilink.cache.RedisService" />
+
 	<!-- JMX监控输出  -->
 	<context:mbean-export />
 	<bean id="redisMonitor" class="com.tinet.ctilink.monitor.RedisMonitor" />
