@@ -1,5 +1,6 @@
 package com.tinet.ctilink.realtime;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletException;
@@ -12,6 +13,9 @@ import java.io.PrintWriter;
 @Component
 public class IdentifyMultiServlet extends HttpServlet {
 
+	@Autowired
+	IdentifyRealtime identifyRealtime;
+	
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         this.doPost(request, response);
@@ -24,7 +28,7 @@ public class IdentifyMultiServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
-        IdentifyRealtime identifyRealtime = new IdentifyRealtime();
+
         long start = System.currentTimeMillis();
         out.print(identifyRealtime.queryByHttpServletRequest(request));
         long end = System.currentTimeMillis();

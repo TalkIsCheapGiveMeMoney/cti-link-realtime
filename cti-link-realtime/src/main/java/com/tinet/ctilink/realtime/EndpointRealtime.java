@@ -1,17 +1,20 @@
 package com.tinet.ctilink.realtime;
 
-import com.tinet.ctilink.cache.CacheKey;
-import com.tinet.ctilink.cache.RedisService;
-import com.tinet.ctilink.conf.model.Gateway;
-import com.tinet.ctilink.inc.Const;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
+import com.tinet.ctilink.cache.CacheKey;
+import com.tinet.ctilink.cache.RedisService;
+import com.tinet.ctilink.conf.model.Gateway;
+import com.tinet.ctilink.conf.model.SipProxy;
+import com.tinet.ctilink.inc.Const;
 
 /**
  * 获取路由信息
@@ -69,7 +72,19 @@ public class EndpointRealtime {
                         break;
                     }
                 }
-                return this.dataRes(gateway, false);
+                if(gateway != null){
+                	return this.dataRes(gateway, false);
+                }
+                
+            	List<SipProxy> sipProxyList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.SIP_PROXY, SipProxy.class);
+            	SipProxy sipProxy = null;
+                for (SipProxy s : sipProxyList) {
+                    if (s.getName().equals(id)) {
+                    	sipProxy = s;
+                        break;
+                    }
+                }
+                return this.dataRes(sipProxy, false);
             }
         } else {
             List<Gateway> gatewayList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.GATEWAY, Gateway.class);
@@ -100,6 +115,27 @@ public class EndpointRealtime {
             res.append(gateway.getCallLimit());
             res.append("&direct_media=no");
             res.append("&rtp_keepalive=60");
+            res.append("&rtp_timeout=60");  
+            res.append("&rtp_timeout_hold=60");
+            res.append("\n");
+        }
+
+        return res.toString();
+    }
+    public String dataRes(SipProxy sipProxy, boolean nameIsIp) {
+        StringBuffer res = new StringBuffer();
+        if (sipProxy != null) {
+            res.append("id=");
+            res.append(sipProxy.getName());
+            res.append("&type=endpoint");
+            res.append("&transport=transport-udp-nat");
+            res.append("&context=default");
+            res.append("&disallow=");
+            res.append("&allow=all");
+            res.append("&direct_media=no");
+            res.append("&rtp_keepalive=60");
+            res.append("&rtp_timeout=60");  
+            res.append("&rtp_timeout_hold=60");
             res.append("\n");
         }
 

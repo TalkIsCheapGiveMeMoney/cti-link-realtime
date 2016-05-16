@@ -413,6 +413,7 @@ public class GetIvrNodeServlet extends HttpServlet {
 						jsonObject.put(enterpriseIvr.getPath() + "_switch_other_next", jsonObj.get("switch_other_next")); // 下一节点
 						break;
 				}
+				//查询节点的锚点设置
 			}
 		} else {
 			logger.debug("通过通道传过来的企业id和ivrid去查询相关的IVR节点配置 失败，请查询表：EnterpriseIvr");
