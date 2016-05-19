@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 public class ClidUtil {
 
     public static String getClid (int enterpriseId, int routerClidCallType, String customerNumber, StringBuilder clidBack) {
-        RedisService redisService = ContextUtil.getContext().getBean(RedisService.class);
+        RedisService redisService = ContextUtil.getBean(RedisService.class);
         EnterpriseClid enterpriseClid = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_CLID_ENTERPRISE_ID, enterpriseId)
                 , EnterpriseClid.class);
 

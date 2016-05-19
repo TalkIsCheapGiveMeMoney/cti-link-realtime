@@ -21,7 +21,7 @@ public class RouterUtil {
 
     public static Router getRouter (int enterpriseId, int routerClidCallType, Caller caller) {
 
-        EnterpriseRouter enterpriseRouter = ContextUtil.getContext().getBean(RedisService.class).get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_ROUTER_ENTERPRISE_ID, enterpriseId)
+        EnterpriseRouter enterpriseRouter = ContextUtil.getBean(RedisService.class).get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_ROUTER_ENTERPRISE_ID, enterpriseId)
                 , EnterpriseRouter.class);
         Router router = null;
         if(enterpriseRouter == null){
@@ -53,7 +53,7 @@ public class RouterUtil {
         if (caller.getTelType() == Const.TEL_TYPE_MOBILE) {
             routerTel = caller.getAreaCode() + caller.getCallerNumber();
         }
-        List<Router> routerList = ContextUtil.getContext().getBean(RedisService.class)
+        List<Router> routerList = ContextUtil.getBean(RedisService.class)
                 .getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ROUTER_ROUTERSET_ID, routersetId), Router.class);
         //找prefix
         for (Router r : routerList) {
@@ -79,7 +79,7 @@ public class RouterUtil {
         Router router = getRouter(enterpriseId, routerClidCallType, caller);
 
         if (router != null) {
-            List<Gateway> gatewayList = ContextUtil.getContext().getBean(RedisService.class)
+            List<Gateway> gatewayList = ContextUtil.getBean(RedisService.class)
                     .getList(Const.REDIS_DB_CONF_INDEX, CacheKey.GATEWAY, Gateway.class);
             for (Gateway gw : gatewayList) {
                 if (gw.getId().equals(router.getGatewayId())) {

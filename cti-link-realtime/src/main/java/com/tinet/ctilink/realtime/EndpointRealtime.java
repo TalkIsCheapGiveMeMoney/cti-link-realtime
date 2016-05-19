@@ -67,7 +67,7 @@ public class EndpointRealtime {
                 List<Gateway> gatewayList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.GATEWAY, Gateway.class);
                 Gateway gateway = null;
                 for (Gateway g : gatewayList) {
-                    if (g.getId().toString().equals(id)) {
+                    if (g.getName().equals(id)) {
                         gateway = g;
                         break;
                     }
