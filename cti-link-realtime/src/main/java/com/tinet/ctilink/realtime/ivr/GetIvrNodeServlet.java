@@ -114,10 +114,10 @@ public class GetIvrNodeServlet extends HttpServlet {
 				Set<String> propertyKeySet = jsonObj.keySet();
 				switch (enterpriseIvr.getAction()) {
 					case 1:/******************************************* 播放节点 *********************************************/
-						JSONArray jsonPlayVoiceArray = JSONArray.fromObject(jsonObj.getString("play_voice"));
+						JSONArray jsonPlayVoiceArray = jsonObj.getJSONArray("play_voice");
 						jsonObject.put(enterpriseIvr.getPath() + "_play_voice_count", jsonPlayVoiceArray.size());
 						for(int i = 0; i < jsonPlayVoiceArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonPlayVoiceArray.get(i);
+							JSONObject jsonTmp = (JSONObject)jsonPlayVoiceArray.getJSONObject(i);
 							String type = jsonTmp.get("type").toString();
 							String file = jsonTmp.get("file").toString();
 
@@ -130,10 +130,10 @@ public class GetIvrNodeServlet extends HttpServlet {
 
 						break;
 					case 2:/******************************************* 选择节点 *********************************************/
-						JSONArray jsonSelectVoiceArray = JSONArray.fromObject(jsonObj.getString("select_voice"));
+						JSONArray jsonSelectVoiceArray = jsonObj.getJSONArray("select_voice");
 						jsonObject.put(enterpriseIvr.getPath() + "_select_voice_count", jsonSelectVoiceArray.size());
 						for(int i = 0; i < jsonSelectVoiceArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonSelectVoiceArray.get(i);
+							JSONObject jsonTmp = (JSONObject)jsonSelectVoiceArray.getJSONObject(i);
 							String type = jsonTmp.get("type").toString();
 							String file = jsonTmp.get("file").toString();
 
@@ -144,9 +144,9 @@ public class GetIvrNodeServlet extends HttpServlet {
 						jsonObject.put(enterpriseIvr.getPath() + "_select_retries", jsonObj.getString("select_retries")); // 下一节点
 						jsonObject.put(enterpriseIvr.getPath() + "_select_multi_key_type", jsonObj.getString("select_multi_key_type")); // 下一节点
 						jsonObject.put(enterpriseIvr.getPath() + "_select_error_file", jsonObj.getString("select_error_file")); // 下一节点
-						JSONArray jsonSelectArray = JSONArray.fromObject(jsonObj.getString("select"));
+						JSONArray jsonSelectArray = jsonObj.getJSONArray("select");
 						for(int i = 0; i < jsonSelectArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonSelectArray.get(i);
+							JSONObject jsonTmp = (JSONObject)jsonSelectArray.getJSONObject(i);
 							String key = jsonTmp.get("key").toString();
 							String next = jsonTmp.get("next").toString();
 							jsonObject.put(enterpriseIvr.getPath() + "_select_" +key+"_next", next);
@@ -204,10 +204,10 @@ public class GetIvrNodeServlet extends HttpServlet {
 								break;
 						}
 
-						JSONArray jsonArray = JSONArray.fromObject(jsonObj.get("time"));
+						JSONArray jsonArray = jsonObj.getJSONArray("time");
 						boolean isMatch =false;
 						for(int i = 0; i < jsonArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonArray.get(i);
+							JSONObject jsonTmp = (JSONObject)jsonArray.getJSONObject(i);
 							Integer timeId = Integer.parseInt(jsonTmp.get("id").toString());
 							String next = jsonTmp.get("next").toString();
 							EnterpriseTime eTime = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_TIME_ENTERPRISE_ID_ID, enterpriseId, timeId)
@@ -246,10 +246,10 @@ public class GetIvrNodeServlet extends HttpServlet {
 						}
 						break;
 					case 6:/******************************************* 地区节点 *********************************************/
-						JSONArray jsonAreaArray = JSONArray.fromObject(jsonObj.get("area"));
+						JSONArray jsonAreaArray = jsonObj.getJSONArray("area");
 						isMatch =false;
 						for(int i=0; i<jsonAreaArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonAreaArray.get(i);
+							JSONObject jsonTmp = (JSONObject)jsonAreaArray.getJSONObject(i);
 							Integer areaGroupId = Integer.parseInt(jsonTmp.get("id").toString());
 							String next = jsonTmp.get("next").toString();
 							EnterpriseArea area = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_AREA_ENTERPRISE_ID_GROUP_ID_AREA_CODE, enterpriseId, areaGroupId, areaCode)
@@ -270,11 +270,11 @@ public class GetIvrNodeServlet extends HttpServlet {
 						}
 						break;
 					case 8:/****************************************** 设置变量节点 ******************************************/
-						JSONArray jsonSetArray = JSONArray.fromObject(jsonObj.get("set"));
+						JSONArray jsonSetArray = jsonObj.getJSONArray("set");
 						jsonObject.put(enterpriseIvr.getPath() + "_set_count", jsonSetArray.size());
 						BASE64Decoder base64Decoder = new BASE64Decoder();
 						for(int i=0; i<jsonSetArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonSetArray.get(i);
+							JSONObject jsonTmp = (JSONObject)jsonSetArray.getJSONObject(i);
 							String name = jsonTmp.get("name").toString();
 							String value = jsonTmp.get("value").toString();
 							String nameType = jsonTmp.get("name_type").toString();
@@ -291,10 +291,10 @@ public class GetIvrNodeServlet extends HttpServlet {
 						jsonObject.put(enterpriseIvr.getPath() + "_set_next", jsonObj.get("next")); // 下一节点
 						break;
 					case 9:/******************************************* 收号节点 *********************************************/
-						JSONArray jsonReadArray = JSONArray.fromObject(jsonObj.get("read_voice"));
+						JSONArray jsonReadArray = jsonObj.getJSONArray("read_voice");
 						jsonObject.put(enterpriseIvr.getPath() + "_read_voice_count", jsonReadArray.size());
 						for(int i=0; i<jsonReadArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonReadArray.get(i);
+							JSONObject jsonTmp = (JSONObject)jsonReadArray.getJSONObject(i);
 							String type = jsonTmp.get("type").toString();
 							String file = jsonTmp.get("file").toString();
 
@@ -317,11 +317,11 @@ public class GetIvrNodeServlet extends HttpServlet {
 						}
 						break;
 					case 11:/****************************************** 分支节点branch节点 ************************************/
-						JSONArray jsonBranchArray = JSONArray.fromObject(jsonObj.get("branch_expression"));
+						JSONArray jsonBranchArray = jsonObj.getJSONArray("branch_expression");
 						String exp = "";
 						String r = "&&";
 						for(int i=0; i<jsonBranchArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonBranchArray.get(i);
+							JSONObject jsonTmp = (JSONObject)jsonBranchArray.getJSONObject(i);
 							String name = jsonTmp.get("name").toString();
 							String operator = jsonTmp.get("operator").toString();
 							String value = jsonTmp.get("value").toString();
@@ -358,10 +358,10 @@ public class GetIvrNodeServlet extends HttpServlet {
 						}
 						break;
 					case 13:/****************************************** 直呼号码节点 *****************************************/
-						JSONArray jsonDialArray = JSONArray.fromObject(jsonObj.get("dial_voice"));
+						JSONArray jsonDialArray = jsonObj.getJSONArray("dial_voice");
 						jsonObject.put(enterpriseIvr.getPath() + "_dial_voice_count", jsonDialArray.size());
 						for(int i=0; i<jsonDialArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonDialArray.get(i);
+							JSONObject jsonTmp = (JSONObject)jsonDialArray.getJSONObject(i);
 							String type = jsonTmp.get("type").toString();
 							String file = jsonTmp.get("file").toString();
 
@@ -398,10 +398,10 @@ public class GetIvrNodeServlet extends HttpServlet {
 						}
 						break;
 					case 16:/****************************************** Switch节点 *****************************************/
-						JSONArray jsonSwitchArray = JSONArray.fromObject(jsonObj.get("value"));
+						JSONArray jsonSwitchArray = jsonObj.getJSONArray("value");
 						jsonObject.put(enterpriseIvr.getPath() + "_switch_value_count", jsonSwitchArray.size());
 						for(int i=0; i<jsonSwitchArray.size(); i++){
-							JSONObject jsonTmp = (JSONObject)jsonSwitchArray.get(i);
+							JSONObject jsonTmp = (JSONObject)jsonSwitchArray.getJSONObject(i);
 							String value = jsonTmp.get("value").toString();
 							String next = jsonTmp.get("next").toString();
 
