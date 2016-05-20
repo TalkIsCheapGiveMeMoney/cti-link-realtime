@@ -8,8 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.tinet.ctilink.conf.util.ClidUtil;
 import com.tinet.ctilink.json.JSONObject;
-import com.tinet.ctilink.realtime.util.ClidUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -34,10 +34,10 @@ public class GetClidServlet extends HttpServlet {
         int enterpriseId = Integer.parseInt(request.getParameter("enterpriseId"));
         String customerNumber = request.getParameter("customerNumber");
         int routerClidCallType = Integer.parseInt(request.getParameter("routerClidCallType"));
+        String numberTrunk = request.getParameter("numberTrunk");
 
         JSONObject jsonObject = new JSONObject();
-        StringBuilder clidBack = new StringBuilder();
-        String clid = ClidUtil.getClid(enterpriseId, routerClidCallType, customerNumber, clidBack);
+        String clid = ClidUtil.getClid(enterpriseId, routerClidCallType, customerNumber, numberTrunk);
         if (StringUtils.isNotEmpty(clid)) {
             jsonObject.put("clid", clid);
         }

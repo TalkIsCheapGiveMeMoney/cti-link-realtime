@@ -33,7 +33,7 @@ import sun.misc.BASE64Decoder;
  * @Package:com.tinet.ccic.ivr
  * @author 罗尧 Email:j2ee.xiao@gmail.com
  * @version V1.0 2011-9-20 下午07:16:51
- * 
+ *
  *          访问方式：http://ip+端口/interface/ivr/GetIvrNode
  *          http://172.16.203.194/interface/ivr/GetIvrNode 这个类获得IVR的具体节点配置，如下：
  *          [path]_action ivr节点类型 [path]_next ivr下一节点 [path]_play_type

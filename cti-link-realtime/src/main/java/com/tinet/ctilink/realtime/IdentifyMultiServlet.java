@@ -28,7 +28,6 @@ public class IdentifyMultiServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
-
         long start = System.currentTimeMillis();
         out.print(identifyRealtime.queryByHttpServletRequest(request));
         long end = System.currentTimeMillis();

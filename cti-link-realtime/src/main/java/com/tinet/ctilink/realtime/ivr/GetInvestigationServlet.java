@@ -64,17 +64,19 @@ public class GetInvestigationServlet extends HttpServlet {
 				if (jsonObj != null) {
 					if (investigation.getAction() == 1) { /** 播放节点 */
 						jsonObject.put("sv_" + investigation.getPath() + "_action", investigation.getAction());
+						jsonObject.put("sv_" + investigation.getAnchor() + "_anchor", investigation.getAnchor());
 						jsonObject.put("sv_" + investigation.getPath() + "_play_type", jsonObj.get("play_type")); // 播放类型
 						jsonObject.put("sv_" + investigation.getPath() + "_play_file", jsonObj.get("play_file")); // 播放类型对应的值
 						jsonObject.put("sv_" + investigation.getPath() + "_next", jsonObj.get("next")); // 下一跳
 					}
 					if (investigation.getAction() == 2) { /** 选择节点 */
 						jsonObject.put("sv_" + investigation.getPath() + "_action", investigation.getAction());
+						jsonObject.put("sv_" + investigation.getAnchor() + "_anchor", investigation.getAnchor());
 						jsonObject.put("sv_" + investigation.getPath() + "_select_file", jsonObj.get("select_file"));
 						jsonObject.put("sv_" + investigation.getPath() + "_select_retries", jsonObj.get("select_retries"));
-						JSONArray jsonSelectArray = JSONArray.fromObject(jsonObj.get("select"));
+						JSONArray jsonSelectArray = jsonObj.getJSONArray("select");
 						for(int i = 0; i < jsonSelectArray.size(); i++){
-							Map jsonTmp = (Map)jsonSelectArray.get(i);
+							JSONObject jsonTmp = jsonSelectArray.getJSONObject(i);
 							String key = jsonTmp.get("key").toString();
 							String next = jsonTmp.get("next").toString();
 							jsonObject.put("sv_" + investigation.getPath() + "_select_" + key + "_next", next);
