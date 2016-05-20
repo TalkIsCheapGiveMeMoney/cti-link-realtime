@@ -297,9 +297,9 @@ public class GetIvrOptionServlet extends HttpServlet {
 												case 1://******************1:IVR*****************************//*
 
 													jsonObject.put("__" + Const.IVR_ID, ruleProperty);
-													EnterpriseIvr enterpriseIvr = redisService.get(Const.REDIS_DB_CONF_INDEX
+													List<EnterpriseIvr> enterpriseIvrList = redisService.getList(Const.REDIS_DB_CONF_INDEX
 															, String.format(CacheKey.ENTERPRISE_IVR_ENTERPRISE_ID_IVR_ID, enterpriseId, Integer.parseInt(ruleProperty)), EnterpriseIvr.class);
-													if (enterpriseIvr == null) {
+													if (enterpriseIvrList == null || enterpriseIvrList.size() == 0) {
 														jsonObject.put(Const.VALID_IVR, "0");
 													} else {
 														jsonObject.put(Const.VALID_IVR, "1");

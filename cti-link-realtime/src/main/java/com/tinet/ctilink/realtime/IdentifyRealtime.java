@@ -4,6 +4,7 @@ package com.tinet.ctilink.realtime;
 import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
 import com.tinet.ctilink.conf.model.Gateway;
+import com.tinet.ctilink.conf.model.SipProxy;
 import com.tinet.ctilink.inc.Const;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -48,16 +49,35 @@ public class IdentifyRealtime {
                             }
                         }
                         // 取第一条
-                        return this.dataRes(gateway, true);
+                        return this.dataRes(gateway);
                     }
                 }
             }
+        }else{
+        	 List<SipProxy> sipProxyList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.SIP_PROXY, SipProxy.class);
+             String resStr = "";
+             for (SipProxy sipProxy : sipProxyList) {
+                 resStr = resStr + this.dataRes(sipProxy);
+             }
+             return resStr;
         }
         return "";
     }
 
-    public String dataRes(Gateway gateway, boolean nameIsIp) {
+    public String dataRes(SipProxy sipProxy) {
         StringBuffer res = new StringBuffer();
+        if (sipProxy != null) {
+            res.append("id=" + sipProxy.getName());
+            res.append("&type=identify");
+            res.append("&endpoint=" + sipProxy.getName());
+            res.append("&match=" + sipProxy.getIpAddr());
+            res.append("\n");
+        }
+
+        return res.toString();
+    }
+    public String dataRes(Gateway gateway) {
+    	StringBuffer res = new StringBuffer();
         if (gateway != null) {
             res.append("id=" + gateway.getName());
             res.append("&type=identify");

@@ -13,9 +13,9 @@ import java.io.PrintWriter;
 @Component
 public class IdentifyMultiServlet extends HttpServlet {
 
-    @Autowired
-    IdentifyRealtime identifyRealtime;
-
+	@Autowired
+	IdentifyRealtime identifyRealtime;
+	
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         this.doPost(request, response);

@@ -1,5 +1,6 @@
 package com.tinet.ctilink.realtime.ivr;
 
+import com.github.pagehelper.StringUtil;
 import com.tinet.ctilink.cache.RedisService;
 import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONObject;
@@ -42,10 +43,13 @@ public class TtsSendGetServlet extends HttpServlet {
         JSONObject jsonObject = new JSONObject();
 
         String ttsText = request.getParameter("ttsText");
-        String enterpriseId = request.getParameter("enterprsieId");
+        String enterpriseId = request.getParameter("enterpriseId");
         String uniqueId = request.getParameter("uniqueId");
-        String vid=request.getParameter("vid");
-
+        String vid = request.getParameter("vid");
+        
+        if(StringUtil.isEmpty(vid)){
+        	vid = "1";
+        }
         LogTts logTts = new LogTts();
         logTts.setEnterpriseId(Integer.parseInt(enterpriseId));
         logTts.setRequestTime(new Date());
@@ -54,6 +58,7 @@ public class TtsSendGetServlet extends HttpServlet {
         String res = TtsSendGetUtil.ttsSendGet(uniqueId, ttsText, vid, true, logTts, ttsUrlList);
         if (StringUtils.isNotEmpty(res)) {
             jsonObject.put("TTS_FILE", res);
+            jsonObject.put("TTS_URL_LIST", ttsUrlList.toString());
             redisService.incrby(Const.REDIS_DB_CTI_INDEX, "system.tts.success_count", 1);
         } else {
             redisService.incrby(Const.REDIS_DB_CTI_INDEX, "system.tts.fail_count", 1);
