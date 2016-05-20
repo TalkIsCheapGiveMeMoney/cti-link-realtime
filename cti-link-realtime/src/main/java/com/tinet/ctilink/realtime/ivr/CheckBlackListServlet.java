@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
+import com.tinet.ctilink.inc.EnterpriseSettingConst;
 import com.tinet.ctilink.json.JSONObject;
 import com.tinet.ctilink.conf.model.EnterpriseSetting;
 import com.tinet.ctilink.conf.model.RestrictTel;
@@ -66,7 +67,7 @@ public class CheckBlackListServlet extends HttpServlet {
 
 		//首先看启用了黑名单还是白名单，或者什么都没有启用
 		EnterpriseSetting enterpriseSetting = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME,
-				Integer.parseInt(ccEnterpriseId), Const.ENTERPRISE_SETTING_NAME_RESTRICT_TEL_TYPE), EnterpriseSetting.class);
+				Integer.parseInt(ccEnterpriseId), EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_RESTRICT_TEL_TYPE), EnterpriseSetting.class);
 		int isRestrictTel = 0;
 		if (null != enterpriseSetting) {
 			String value = enterpriseSetting.getValue();

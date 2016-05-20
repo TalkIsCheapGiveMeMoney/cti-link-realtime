@@ -12,8 +12,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.tinet.ctilink.conf.entity.Caller;
+import com.tinet.ctilink.conf.util.AreaCodeUtil;
+import com.tinet.ctilink.inc.EnterpriseSettingConst;
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +32,6 @@ import com.tinet.ctilink.conf.model.Entity;
 import com.tinet.ctilink.conf.model.Trunk;
 import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONObject;
-import com.tinet.ctilink.realtime.entity.Caller;
-import com.tinet.ctilink.realtime.util.AreaCodeUtil;
 
 
 /**
@@ -164,19 +164,19 @@ public class GetIvrOptionServlet extends HttpServlet {
 
 					EnterpriseSetting s;
 					s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
-							, Const.ENTERPRISE_SETTING_NAME_RESTRICT_TEL_TYPE), EnterpriseSetting.class);
-					if (s!=null && s.getName().equals(Const.ENTERPRISE_SETTING_NAME_RESTRICT_TEL_TYPE) && (s.getValue().equals("1") || s.getValue().equals("2"))) {//开启了黑白名单功能
+							, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_RESTRICT_TEL_TYPE), EnterpriseSetting.class);
+					if (s!=null && s.getName().equals(EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_RESTRICT_TEL_TYPE) && (s.getValue().equals("1") || s.getValue().equals("2"))) {//开启了黑白名单功能
 						jsonObject.put(Const.IS_RESTRICT_CHECK, "1");
 					}
 					s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
-							, Const.ENTERPRISE_SETTING_NAME_IS_RECORD), EnterpriseSetting.class);
-					if (s != null && s.getName().equals(Const.ENTERPRISE_SETTING_NAME_IS_RECORD) && s.getValue().equals("1")) { //开启IVR录音功能
+							, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_IS_RECORD), EnterpriseSetting.class);
+					if (s != null && s.getName().equals(EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_IS_RECORD) && s.getValue().equals("1")) { //开启IVR录音功能
 						jsonObject.put(Const.IS_RECORD, "1");
 						jsonObject.put(Const.RECORD_SCOPE, s.getProperty());
 					}
 					s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
-							, Const.ENTERPRISE_SETTING_NAME_IS_CRBT_OPEN), EnterpriseSetting.class);
-					if (s != null && s.getName().equals(Const.ENTERPRISE_SETTING_NAME_IS_CRBT_OPEN) && s.getValue().equals("1")) {  //开启彩铃, 呼入不自动answer
+							, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_IS_CRBT_OPEN), EnterpriseSetting.class);
+					if (s != null && s.getName().equals(EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_IS_CRBT_OPEN) && s.getValue().equals("1")) {  //开启彩铃, 呼入不自动answer
 						jsonObject.put(Const.IS_CRBT_OPEN, "1");
 					}
 
@@ -187,7 +187,7 @@ public class GetIvrOptionServlet extends HttpServlet {
 							jsonObject.put(Const.VALID_IVR, "1");
 						}else{
 							s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
-									, Const.ENTERPRISE_SETTING_NAME_WEBCALL_DEFAULT_IVR), EnterpriseSetting.class);
+									, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_WEBCALL_DEFAULT_IVR), EnterpriseSetting.class);
 							jsonObject.put("__" + Const.IVR_ID, s.getValue());
 							jsonObject.put(Const.VALID_IVR, "1");
 						}
@@ -223,17 +223,18 @@ public class GetIvrOptionServlet extends HttpServlet {
 								break;
 						}
 
-						List<EnterpriseIvrRouter> routers = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(
+						List<EnterpriseIvrRouter> enterpriseIvrRouterList = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(
 								CacheKey.ENTERPRISE_IVR_ROUTER_ENTERPRISE_ID, enterpriseId), EnterpriseIvrRouter.class);
-						if (routers.size() > 0) {
+						if (enterpriseIvrRouterList != null
+								&& enterpriseIvrRouterList.size() > 0) {
 							boolean found = false; //是否找到相应数据 找到应该跳出循环
-							for (EnterpriseIvrRouter routerLists : routers) {
-								String ruleTime = routerLists.getRuleTimeProperty(); //时间配置
-								String ruleAreaNumber = routerLists.getRuleAreaProperty();//地区配置
-								String ruleTrunkNumber = routerLists.getRuleTrunkProperty();//中继号码配置
+							for (EnterpriseIvrRouter enterpriseIvrRouter : enterpriseIvrRouterList) {
+								String ruleTime = enterpriseIvrRouter.getRuleTimeProperty(); //时间配置
+								String ruleAreaNumber = enterpriseIvrRouter.getRuleAreaProperty();//地区配置
+								String ruleTrunkNumber = enterpriseIvrRouter.getRuleTrunkProperty();//中继号码配置
 
-								String ruleProperty = routerLists.getRouterProperty(); //IVR路由目的地	1:IVR 2:固定电话 3:分机
-								Integer ruleType = routerLists.getRouterType(); //IVR路由类型
+								String ruleProperty = enterpriseIvrRouter.getRouterProperty(); //IVR路由目的地	1:IVR 2:固定电话 3:分机
+								Integer ruleType = enterpriseIvrRouter.getRouterType(); //IVR路由类型
 
 
 								boolean areaBl = false;

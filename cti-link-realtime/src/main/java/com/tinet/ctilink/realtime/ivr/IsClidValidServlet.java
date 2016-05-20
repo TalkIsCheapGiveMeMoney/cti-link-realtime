@@ -2,12 +2,13 @@ package com.tinet.ctilink.realtime.ivr;
 
 import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
+import com.tinet.ctilink.conf.entity.Caller;
 import com.tinet.ctilink.conf.model.EnterpriseSetting;
 import com.tinet.ctilink.conf.model.Trunk;
+import com.tinet.ctilink.conf.util.AreaCodeUtil;
 import com.tinet.ctilink.inc.Const;
+import com.tinet.ctilink.inc.EnterpriseSettingConst;
 import com.tinet.ctilink.json.JSONObject;
-import com.tinet.ctilink.realtime.entity.Caller;
-import com.tinet.ctilink.realtime.util.AreaCodeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,7 @@ public class IsClidValidServlet extends HttpServlet {
 		Integer isClidValidFlag = -1;
 
 		EnterpriseSetting setting = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME
-				, Integer.parseInt(enterpriseId), Const.ENTERPRISE_SETTING_NAME_CLID_LIST), EnterpriseSetting.class);
+				, Integer.parseInt(enterpriseId), EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_CLID_LIST), EnterpriseSetting.class);
 		if(null != setting && setting.getValue() != null){
 			String[] clidArray = setting.getValue().split(",");
 			for(String str: clidArray){

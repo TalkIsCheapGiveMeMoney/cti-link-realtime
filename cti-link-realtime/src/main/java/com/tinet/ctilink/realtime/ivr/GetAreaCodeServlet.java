@@ -8,10 +8,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.tinet.ctilink.conf.entity.Caller;
+import com.tinet.ctilink.conf.util.AreaCodeUtil;
 import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONObject;
-import com.tinet.ctilink.realtime.entity.Caller;
-import com.tinet.ctilink.realtime.util.AreaCodeUtil;
 import org.springframework.stereotype.Component;
 
 

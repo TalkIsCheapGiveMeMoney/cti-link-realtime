@@ -8,11 +8,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.tinet.ctilink.conf.entity.Caller;
+import com.tinet.ctilink.conf.util.AreaCodeUtil;
+import com.tinet.ctilink.conf.util.RouterUtil;
 import com.tinet.ctilink.json.JSONObject;
 import com.tinet.ctilink.conf.model.Gateway;
-import com.tinet.ctilink.realtime.entity.Caller;
-import com.tinet.ctilink.realtime.util.AreaCodeUtil;
-import com.tinet.ctilink.realtime.util.RouterUtil;
 import org.springframework.stereotype.Component;
 
 @Component

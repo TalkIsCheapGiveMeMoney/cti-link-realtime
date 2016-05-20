@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import com.tinet.ctilink.inc.SystemSettingConst;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -74,7 +75,7 @@ public class TtsSendGetUtil {
 	    RedisService redisService = ContextUtil.getBean(RedisService.class);
 	    
 		SystemSetting ttsProxyUrlSystemSetting = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.SYSTEM_SETTING_NAME,
-				Const.SYSTEM_SETTING_NAME_TTSS_PROXY_URL), SystemSetting.class);
+				SystemSettingConst.SYSTEM_SETTING_NAME_TTSS_PROXY_URL), SystemSetting.class);
 
 		String TTSC_GET_URL = ttsProxyUrlSystemSetting.getValue() + ttsGetURL;
 		

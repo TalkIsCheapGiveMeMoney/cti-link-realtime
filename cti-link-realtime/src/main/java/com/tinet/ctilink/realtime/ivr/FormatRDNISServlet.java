@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
 import com.tinet.ctilink.inc.Const;
+import com.tinet.ctilink.inc.SystemSettingConst;
 import com.tinet.ctilink.json.JSONObject;
 import com.tinet.ctilink.conf.model.Gateway;
 import com.tinet.ctilink.conf.model.SystemSetting;
@@ -57,7 +58,7 @@ public class FormatRDNISServlet extends HttpServlet {
 			}
 			if (!find) {
 				SystemSetting systemSetting = redisService.get(Const.REDIS_DB_CONF_INDEX,
-						String.format(CacheKey.SYSTEM_SETTING_NAME, Const.SYSTEM_SETTING_NAME_DEFAULT_AREA_CODE), SystemSetting.class);
+						String.format(CacheKey.SYSTEM_SETTING_NAME, SystemSettingConst.SYSTEM_SETTING_NAME_DEFAULT_AREA_CODE), SystemSetting.class);
 				if (systemSetting != null) {
 					areaCode = systemSetting.getValue();
 				}
