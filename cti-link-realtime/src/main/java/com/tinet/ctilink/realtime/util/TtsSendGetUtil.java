@@ -21,6 +21,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -39,29 +41,14 @@ import com.tinet.ctilink.util.SystemCmd;
 
 
 public class TtsSendGetUtil {
-
-	static String logPath = "/var/log/cti-link/ttsc";
+	private static final Logger logger = LoggerFactory.getLogger(TtsSendGetUtil.class);
 	
 	static String ttsGetURL = "/interface/v2/ttsGet";
 	static String ttsWaitURL = "/interface/v2/ttsWait";
 
-	public static void init(){
-		SystemCmd.executeCmd("mkdir -p " + logPath);
-	}
-	public static void ttsLog(String logFile, String uniqueId, String msg){
-		File logFileFile=new File(logFile);
-		
-		try{
-			if(logFileFile.exists()){
-			}else{
-				logFileFile.createNewFile();
-			}
-			FileWriter fileWriter=new FileWriter(logFileFile, true);
-			fileWriter.write(DateUtil.format(new Date(), DateUtil.FMT_DATE_YYYYMMDDHHmmss) + " " + uniqueId + " " + msg +"\r\n");
-			fileWriter.close();
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
+
+	public static void ttsLog(String uniqueId, String msg){
+		logger.debug("[" + uniqueId + "] msg:" + msg);
 	}
 	
 	public static String ttsSendGet(String uniqueId, String ttsText,String ttslanguagetype, boolean returnFile, LogTts logTts,StringBuffer ttsurllists){
@@ -71,7 +58,6 @@ public class TtsSendGetUtil {
 		
 		
 		String day = DateUtil.format(new Date(), DateUtil.FMT_DATE_YYYY_MM_DD);
-	    String logFile = logPath + "/" + "ttsc_send.log." + day;
 	    RedisService redisService = ContextUtil.getBean(RedisService.class);
 	    
 		SystemSetting ttsProxyUrlSystemSetting = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.SYSTEM_SETTING_NAME,
@@ -91,7 +77,7 @@ public class TtsSendGetUtil {
 		List<String> needCheckList = new ArrayList<String>();
 		List<String> ttsUrlPathList = new ArrayList<String>();
 		if(StringUtils.isNotEmpty(ttsText)){
-			ttsLog(logFile, uniqueId, "开始转换ttsText:" + ttsText);
+			ttsLog(uniqueId, "开始转换ttsText:" + ttsText);
 			ttsText = ttsText.replace("\"", "").replace(","," ").replace("."," ").replace(";"," ").replace(":"," ").replace("!"," ").replace("?"," ")
 					.replace("，"," ").replace("。"," ").replace("；"," ").replace("："," ").replace("！"," ").replace("？"," ").trim();
 			String[] textArray = ttsText.split(" ");
@@ -152,7 +138,7 @@ public class TtsSendGetUtil {
 		    			e.printStackTrace();
 		    		}
 		        	if(statusCode.equals(200) && "0".equals(map.get("result"))){
-		        		ttsLog(logFile, uniqueId, "分片:" + text + " 请求url:" + curl + " 成功");
+		        		ttsLog(uniqueId, "分片:" + text + " 请求url:" + curl + " 成功");
 		        		String ttsUrlPath = map.get("url");
 	        			if(StringUtils.isNotEmpty(ttsUrlPath))
 	        				ttsUrlPathList.add(ttsUrlPath);
@@ -162,25 +148,25 @@ public class TtsSendGetUtil {
 		        			String needchecking = map.get("key");
 		        			if(StringUtils.isNotEmpty(needchecking))
 		        				needCheckList.add(needchecking);
-		        			ttsLog(logFile, uniqueId, "分片:" + text + " md5:" + needchecking + " 不存在");		        			
+		        			ttsLog(uniqueId, "分片:" + text + " md5:" + needchecking + " 不存在");		        			
 		        		}
 		        		else if("1".equals(map.get("hitCache")))
 		        		{
 		        			hitCacheCount++;
-				            ttsLog(logFile, uniqueId, "分片:" + text + " md5:" + md5 + " 存在!");				            
+				            ttsLog(uniqueId, "分片:" + text + " md5:" + md5 + " 存在!");				            
 							continue;
 		        		}
 		        		
 		        	}else{
 		        		httpFailCurlList.add(curl);
-		        		ttsLog(logFile, uniqueId, "分片:" + text + " 请求url:" + curl + " 失败 statusCode:" + statusCode + " res:" + res);
+		        		ttsLog(uniqueId, "分片:" + text + " 请求url:" + curl + " 失败 statusCode:" + statusCode + " res:" + res);
 		        	}
 				}catch(Exception e){
 					e.printStackTrace();
 				}
 				if(new Date().getTime() > deadLine){
 					logTts.setResult(-1);
-					ttsLog(logFile, uniqueId, "分隔过程中超时 ttsText=" + ttsText);
+					ttsLog(uniqueId, "分隔过程中超时 ttsText=" + ttsText);
 					logTts.setEndTime(new Date());
 					return "";
 				}
@@ -214,7 +200,7 @@ public class TtsSendGetUtil {
 		    		}
 		    		
 		    		if(statusCode.equals(200) && "0".equals(map.get("result"))){
-		    			ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 成功");
+		    			ttsLog(uniqueId, "重试 请求url:" + failCurl + " 成功");
 		        		String ttsUrlPath = map.get("url");
 	        			if(StringUtils.isNotEmpty(ttsUrlPath))
 	        				ttsUrlPathList.add(ttsUrlPath);
@@ -234,14 +220,14 @@ public class TtsSendGetUtil {
 		        		
 		        	}else{
 		        		httpFailAgainCurlList.add(failCurl);
-		        		ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 失败 statusCode:" + statusCode + " res:" + map.get("result"));
+		        		ttsLog(uniqueId, "重试 请求url:" + failCurl + " 失败 statusCode:" + statusCode + " res:" + map.get("result"));
 		        	}
 				}catch(Exception e){
 					e.printStackTrace();
 				}
 				if(new Date().getTime() > deadLine){
 					logTts.setResult(-1);
-					ttsLog(logFile, uniqueId, "重试http过程中超时 ttsText=" + ttsText);
+					ttsLog(uniqueId, "重试http过程中超时 ttsText=" + ttsText);
 					logTts.setEndTime(new Date());
 					return "";
 				}
@@ -273,7 +259,7 @@ public class TtsSendGetUtil {
 		    		}
 		    		
 		    		if(statusCode.equals(200) && "0".equals(map.get("result"))){
-		    			ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 成功");
+		    			ttsLog(uniqueId, "重试 请求url:" + failCurl + " 成功");
 		        		String ttsUrlPath = map.get("url");
 	        			if(StringUtils.isNotEmpty(ttsUrlPath))
 	        				ttsUrlPathList.add(ttsUrlPath);
@@ -293,14 +279,14 @@ public class TtsSendGetUtil {
 		        		
 		        	}else{		        		
 		        		httpFailAgainCurlList.add(failCurl);
-		        		ttsLog(logFile, uniqueId, "重试 请求url:" + failCurl + " 失败 statusCode:" + statusCode + " res:" + map.get("result"));
+		        		ttsLog(uniqueId, "重试 请求url:" + failCurl + " 失败 statusCode:" + statusCode + " res:" + map.get("result"));
 		        	}
 				}catch(Exception e){
 					e.printStackTrace();
 				}
 				if(new Date().getTime() > deadLine){
 					logTts.setResult(-1);
-					ttsLog(logFile, uniqueId, "重试http过程中超时 ttsText=" + ttsText);
+					ttsLog(uniqueId, "重试http过程中超时 ttsText=" + ttsText);
 					logTts.setEndTime(new Date());
 					return "";
 				}
@@ -308,7 +294,7 @@ public class TtsSendGetUtil {
 
 				
 			String needCheckingKey = StringUtils.join(needCheckList,",");
-			ttsLog(logFile, uniqueId, "需要检查是否转化成功的keys=" + needCheckingKey);
+			ttsLog(uniqueId, "需要检查是否转化成功的keys=" + needCheckingKey);
 			if(StringUtils.isNotEmpty(needCheckingKey))
 			{
 				
@@ -321,7 +307,7 @@ public class TtsSendGetUtil {
 				nv = new BasicNameValuePair("keys", needCheckingKey);					
 				list.add(nv);
 				String curl = TTSC_WAIT_URL + "?" + URLEncodedUtils.format(list, HTTP.UTF_8);
-				ttsLog(logFile, uniqueId, "TTSC_WAIT_URL=" + curl);
+				ttsLog(uniqueId, "TTSC_WAIT_URL=" + curl);
 				HttpGet httpGet = new HttpGet(curl);
 				int socketTimeout = timeout * 1000;
 				RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(2000).build();
@@ -345,12 +331,12 @@ public class TtsSendGetUtil {
 		    			e.printStackTrace();
 		    		}
 		        	if(statusCode.equals(200) && "0".equals(map.get("result"))){
-		        		ttsLog(logFile, uniqueId, "keys"+ needCheckingKey +" 请求url:" + curl + " 成功");
+		        		ttsLog(uniqueId, "keys"+ needCheckingKey +" 请求url:" + curl + " 成功");
 		        	}
 		        	else
 		        	{
 		        		logTts.setResult(-2);
-		        		ttsLog(logFile, uniqueId, "keys"+ needCheckingKey +" 请求url:" + curl + " 等待合成文件超时");
+		        		ttsLog(uniqueId, "keys"+ needCheckingKey +" 请求url:" + curl + " 等待合成文件超时");
 
 						logTts.setEndTime(new Date());
 						return "";
@@ -358,12 +344,12 @@ public class TtsSendGetUtil {
 		        	
 				}catch(Exception e){
 					e.printStackTrace();
-					ttsLog(logFile, uniqueId, "等待合成文件超时 ttsText=" + ttsText);
+					ttsLog(uniqueId, "等待合成文件超时 ttsText=" + ttsText);
 					return "";
 				}
 				
 			}
-			ttsLog(logFile, uniqueId, "合成文件完成 ttsText=" + ttsText);
+			ttsLog(uniqueId, "合成文件完成 ttsText=" + ttsText);
 		}
 		logTts.setResult(0);
 		logTts.setEndTime(new Date());

@@ -6,6 +6,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
+import com.tinet.ctilink.realtime.util.TtsSendGetUtil;
+
 
 /**
  * 应用程序启动器
@@ -24,7 +26,7 @@ public class ApplicationStarter implements ApplicationListener<ContextRefreshedE
 		// 设置JVM的DNS缓存时间
 		// http://docs.amazonaws.cn/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-jvm-ttl.html
 		java.security.Security.setProperty("networkaddress.cache.ttl", "60");
-
+		
 		logger.info("cti-link-realtime 启动成功");
 		System.out.println("cti-clink-realtime 启动成功");
 	}
