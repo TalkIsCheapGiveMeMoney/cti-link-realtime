@@ -191,7 +191,16 @@
 		<servlet-name>getPastCalleeServlet</servlet-name>
 		<url-pattern>/interface/ivr/GetPastCallee</url-pattern>
 	</servlet-mapping>
-
+	
+	<servlet>
+		<servlet-name>getQueueRememberServlet</servlet-name>
+		<servlet-class>com.tinet.ctilink.web.DelegatingServletProxy</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>getQueueRememberServlet</servlet-name>
+		<url-pattern>/interface/ivr/GetQueueRemember</url-pattern>
+	</servlet-mapping>
+	
 	<servlet>
 		<servlet-name>getPrePostServlet</servlet-name>
 		<servlet-class>com.tinet.ctilink.web.DelegatingServletProxy</servlet-class>
