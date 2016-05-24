@@ -39,6 +39,9 @@
 
 	<bean id="redisService" class="com.tinet.ctilink.cache.RedisService" />
 
+	<!-- 注入Spring上下文 -->
+	<bean id="contextUtil" class="com.tinet.ctilink.util.ContextUtil" />
+
 	<!-- JMX监控输出  -->
 	<context:mbean-export />
 	<bean id="redisMonitor" class="com.tinet.ctilink.monitor.RedisMonitor" />
