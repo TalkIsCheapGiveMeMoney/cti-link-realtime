@@ -133,6 +133,12 @@ public class GetIvrOptionServlet extends HttpServlet {
 			/* 通过呼入号码去得到它的ivr_id和enterprise_id*/
 			if (trunk != null) {
 				enterpriseId = trunk.getEnterpriseId();
+				EnterpriseHotline enterpriseHotline = redisService.get(Const.REDIS_DB_CONF_INDEX
+                        , String.format(CacheKey.ENTERPRISE_HOTLINE_ENTERPRISE_ID_NUMBER_TRUNK, enterpriseId, trunk.getNumberTrunk())
+                        , EnterpriseHotline.class);
+				if(enterpriseHotline != null){
+					jsonObject.put(Const.CDR_HOTLINE, enterpriseHotline.getHotline());
+				}
 			}
 		}else if(callType.equals(Const.CDR_CALL_TYPE_OB_WEBCALL+"")){
 			enterpriseId = Integer.parseInt(strEnterpriseId);
