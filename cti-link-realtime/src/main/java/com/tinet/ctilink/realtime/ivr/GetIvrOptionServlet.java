@@ -185,6 +185,12 @@ public class GetIvrOptionServlet extends HttpServlet {
 					if (s != null && s.getName().equals(EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_IS_CRBT_OPEN) && s.getValue().equals("1")) {  //开启彩铃, 呼入不自动answer
 						jsonObject.put(Const.IS_CRBT_OPEN, "1");
 					}
+					s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
+							, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_RECORD_FILE_USERFIELD), EnterpriseSetting.class);
+					if (s != null ) { 
+						jsonObject.put(Const.RECORD_FILE_USERFIELD, s.getValue());
+						jsonObject.put(Const.MONITOR_TYPE, s.getProperty());
+					}
 
 					if(callType.equals(String.valueOf(Const.CDR_CALL_TYPE_OB_WEBCALL))){
 
