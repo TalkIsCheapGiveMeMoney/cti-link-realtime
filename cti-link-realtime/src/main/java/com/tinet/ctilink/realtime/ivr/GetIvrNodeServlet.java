@@ -422,17 +422,19 @@ public class GetIvrNodeServlet extends HttpServlet {
 			/** 取得通道传过来的企业id和ivrid去查询相关的IVR节点配置 */
 			List<CtiLinkEnterpriseIvrAnchor> ivrAnchorList = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_IVR_ANCHOR_ENTERPRISE_ID_IVR_ID, enterpriseId, ivrId)
 					, CtiLinkEnterpriseIvrAnchor.class);
-			for(CtiLinkEnterpriseIvrAnchor ivrAnchor: ivrAnchorList){
-				if(StringUtils.isNotEmpty(jsonObject.getString(ivrAnchor.getPath() + "_anchor_count"))){
-					Integer anchorCount = Integer.parseInt(jsonObject.getString(ivrAnchor.getPath() + "_anchor_count"));
-					anchorCount++;
-					jsonObject.put(ivrAnchor.getPath() + "_anchor_event_"+anchorCount, ivrAnchor.getEvent()); 
-					jsonObject.put(ivrAnchor.getPath() + "_anchor_data_"+anchorCount, ivrAnchor.getData());
-					jsonObject.put(ivrAnchor.getPath() + "_anchor_count", anchorCount);
-				}else{
-					jsonObject.put(ivrAnchor.getPath() + "_anchor_event_1", ivrAnchor.getEvent()); 
-					jsonObject.put(ivrAnchor.getPath() + "_anchor_data_1", ivrAnchor.getData());
-					jsonObject.put(ivrAnchor.getPath() + "_anchor_count", 1);
+			if(ivrAnchorList != null){
+				for(CtiLinkEnterpriseIvrAnchor ivrAnchor: ivrAnchorList){
+					if(StringUtils.isNotEmpty(jsonObject.getString(ivrAnchor.getPath() + "_anchor_count"))){
+						Integer anchorCount = Integer.parseInt(jsonObject.getString(ivrAnchor.getPath() + "_anchor_count"));
+						anchorCount++;
+						jsonObject.put(ivrAnchor.getPath() + "_anchor_event_"+anchorCount, ivrAnchor.getEvent()); 
+						jsonObject.put(ivrAnchor.getPath() + "_anchor_data_"+anchorCount, ivrAnchor.getData());
+						jsonObject.put(ivrAnchor.getPath() + "_anchor_count", anchorCount);
+					}else{
+						jsonObject.put(ivrAnchor.getPath() + "_anchor_event_1", ivrAnchor.getEvent()); 
+						jsonObject.put(ivrAnchor.getPath() + "_anchor_data_1", ivrAnchor.getData());
+						jsonObject.put(ivrAnchor.getPath() + "_anchor_count", 1);
+					}
 				}
 			}
 		} else {
