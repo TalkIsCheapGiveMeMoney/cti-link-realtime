@@ -6,6 +6,8 @@ import com.tinet.ctilink.cache.RedisService;
 import com.tinet.ctilink.conf.model.Gateway;
 import com.tinet.ctilink.conf.model.SipProxy;
 import com.tinet.ctilink.inc.Const;
+import com.tinet.ctilink.realtime.util.IpUtil;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,28 +32,42 @@ public class IdentifyRealtime {
     public String queryByHttpServletRequest(HttpServletRequest request) {
         String id = request.getParameter("id");
         if (StringUtils.isNotEmpty(id)) {
-            if (id.contains("@")) {
+            String fromIp = null;
+            String fromName = null;
+        	if (id.contains("@")) {
                 String[] ids = id.split("@");
                 if (ids.length == 2) {
-                    String fromIp = ids[1];
-
-                    List<Gateway> gatewayList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.GATEWAY, Gateway.class);
-                    if (null != gatewayList && gatewayList.size() > 0) {
-                        Gateway gateway = null;
-                        for (Gateway g : gatewayList) {
-                            if (g.getIpAddr().equals(fromIp)) {
-                                if (gateway == null) {
-                                    gateway = g;
-                                    //取前缀最大的一条
-                                } else if (g.getPrefix().compareTo(gateway.getPrefix()) > 0) {
-                                    gateway = g;
-                                }
-                            }
-                        }
-                        // 取第一条
-                        return this.dataRes(gateway);
-                    }
+                    fromIp = ids[1];
                 }
+            }else{
+            	if(IpUtil.isIp(id)){
+            		fromIp = id;
+            	}else{
+            		fromName = id;
+            	}
+            }
+            List<Gateway> gatewayList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.GATEWAY, Gateway.class);
+            if (null != gatewayList && gatewayList.size() > 0) {
+                Gateway gateway = null;
+                for (Gateway g : gatewayList) {
+                	if(StringUtils.isNotEmpty(fromIp)){
+                		if (g.getIpAddr().equals(fromIp)) {
+	                        if (gateway == null) {
+	                            gateway = g;
+	                            //取前缀最大的一条
+	                        } else if (g.getPrefix().compareTo(gateway.getPrefix()) > 0) {
+	                            gateway = g;
+	                        }
+                		}
+                	}else if(StringUtils.isNotEmpty(fromName)){
+                		if (g.getName().equals(fromName)) {
+	                        gateway = g;
+	                        break;
+                		}
+                	}
+                }
+                // 取第一条
+                return this.dataRes(gateway);
             }
         }else{
         	 List<SipProxy> sipProxyList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.SIP_PROXY, SipProxy.class);
