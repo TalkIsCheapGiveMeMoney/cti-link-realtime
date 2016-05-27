@@ -46,6 +46,10 @@ public class IdentifyRealtime {
             		fromName = id;
             	}
             }
+        	SipProxy sipProxy = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.SIP_PROXY_IP_ADDR, fromIp), SipProxy.class);
+            if(sipProxy != null){
+            	return this.dataRes(sipProxy);
+            }
             List<Gateway> gatewayList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.GATEWAY, Gateway.class);
             if (null != gatewayList && gatewayList.size() > 0) {
                 Gateway gateway = null;
@@ -66,8 +70,9 @@ public class IdentifyRealtime {
                 		}
                 	}
                 }
-                // 取第一条
-                return this.dataRes(gateway);
+                if(gateway != null){
+                	return this.dataRes(gateway);
+                }
             }
         }else{
         	 List<SipProxy> sipProxyList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.SIP_PROXY, SipProxy.class);
@@ -83,7 +88,7 @@ public class IdentifyRealtime {
     public String dataRes(SipProxy sipProxy) {
         StringBuffer res = new StringBuffer();
         if (sipProxy != null) {
-            res.append("id=" + sipProxy.getName());
+            res.append("id=" + sipProxy.getIpAddr());
             res.append("&type=identify");
             res.append("&endpoint=" + sipProxy.getName());
             res.append("&match=" + sipProxy.getIpAddr());
@@ -95,7 +100,7 @@ public class IdentifyRealtime {
     public String dataRes(Gateway gateway) {
     	StringBuffer res = new StringBuffer();
         if (gateway != null) {
-            res.append("id=" + gateway.getName());
+            res.append("id=" + gateway.getIpAddr());
             res.append("&type=identify");
             res.append("&endpoint=" + gateway.getName());
             res.append("&match=" + gateway.getIpAddr());
