@@ -256,4 +256,12 @@
 		<url-pattern>/interface/ivr/TtsSendGet</url-pattern>
 	</servlet-mapping>
 
+	<servlet>
+		<servlet-name>getExtenServlet</servlet-name>
+		<servlet-class>com.tinet.ctilink.web.DelegatingServletProxy</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>getExtenServlet</servlet-name>
+		<url-pattern>/interface/ivr/GetExten</url-pattern>
+	</servlet-mapping>
 </web-app>

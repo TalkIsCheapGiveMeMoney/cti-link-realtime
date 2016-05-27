@@ -15,12 +15,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
+import com.tinet.ctilink.conf.model.CtiLinkEnterpriseIvrAnchor;
 import com.tinet.ctilink.conf.model.EnterpriseArea;
 import com.tinet.ctilink.conf.model.EnterpriseIvr;
 import com.tinet.ctilink.conf.model.EnterpriseTime;
 import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONArray;
 import com.tinet.ctilink.json.JSONObject;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -413,7 +416,24 @@ public class GetIvrNodeServlet extends HttpServlet {
 						jsonObject.put(enterpriseIvr.getPath() + "_switch_other_next", jsonObj.get("switch_other_next")); // 下一节点
 						break;
 				}
-				//查询节点的锚点设置
+
+			}
+			//查询节点的锚点设置
+			/** 取得通道传过来的企业id和ivrid去查询相关的IVR节点配置 */
+			List<CtiLinkEnterpriseIvrAnchor> ivrAnchorList = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_IVR_ANCHOR_ENTERPRISE_ID_IVR_ID, enterpriseId, ivrId)
+					, CtiLinkEnterpriseIvrAnchor.class);
+			for(CtiLinkEnterpriseIvrAnchor ivrAnchor: ivrAnchorList){
+				if(StringUtils.isNotEmpty(jsonObject.getString(ivrAnchor.getPath() + "_anchor_count"))){
+					Integer anchorCount = Integer.parseInt(jsonObject.getString(ivrAnchor.getPath() + "_anchor_count"));
+					anchorCount++;
+					jsonObject.put(ivrAnchor.getPath() + "_anchor_event_"+anchorCount, ivrAnchor.getEvent()); 
+					jsonObject.put(ivrAnchor.getPath() + "_anchor_data_"+anchorCount, ivrAnchor.getData());
+					jsonObject.put(ivrAnchor.getPath() + "_anchor_count", anchorCount);
+				}else{
+					jsonObject.put(ivrAnchor.getPath() + "_anchor_event_1", ivrAnchor.getEvent()); 
+					jsonObject.put(ivrAnchor.getPath() + "_anchor_data_1", ivrAnchor.getData());
+					jsonObject.put(ivrAnchor.getPath() + "_anchor_count", 1);
+				}
 			}
 		} else {
 			logger.debug("通过通道传过来的企业id和ivrid去查询相关的IVR节点配置 失败，请查询表：EnterpriseIvr");
