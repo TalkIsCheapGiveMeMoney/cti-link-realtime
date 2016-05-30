@@ -57,6 +57,8 @@ public class GetHangupSetServlet extends HttpServlet {
 						StringEscapeUtils.unescapeHtml4(setList.get(i).getVariableValue()));
 				jsonObject.put("hangup_set_" + i + "_value_type", setList.get(i).getVariableValueType());
 			}
+		}else{
+			jsonObject.put("hangup_set_count", 0);
 		}
 		out.append(jsonObject.toString());
 		out.flush();

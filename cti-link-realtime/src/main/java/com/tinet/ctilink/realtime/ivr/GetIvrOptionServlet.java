@@ -204,6 +204,14 @@ public class GetIvrOptionServlet extends HttpServlet {
 							jsonObject.put(Const.VALID_IVR, "1");
 						}
 					}else{//按照呼入检查
+
+						s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
+								, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_CALL_LIMIT_IB), EnterpriseSetting.class);
+						if(s !=null && StringUtils.isNotEmpty(s.getValue())){
+							jsonObject.put(Const.ENTERPRISE_SETTING_NAME_CALL_LIMIT_IB, s.getValue());
+						}else{
+							jsonObject.put(Const.ENTERPRISE_SETTING_NAME_CALL_LIMIT_IB, 0);
+						}
 						Date nowDate = new Date();
 						Calendar cc = Calendar.getInstance();
 						DateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
