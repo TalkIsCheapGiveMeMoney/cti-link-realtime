@@ -8,11 +8,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.stereotype.Component;
+
+import com.tinet.ctilink.ami.inc.AmiChanVarNameConst;
 import com.tinet.ctilink.conf.entity.Caller;
 import com.tinet.ctilink.conf.util.AreaCodeUtil;
-import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONObject;
-import org.springframework.stereotype.Component;
 
 
 @Component
@@ -36,10 +37,10 @@ public class GetAreaCodeServlet extends HttpServlet {
 
 		Caller caller = AreaCodeUtil.updateGetAreaCode(customerNumber, gateway);
 		String areaCode = caller.getAreaCode();
-		jsonObject.put("__" + Const.CDR_CUSTOMER_NUMBER, caller.getCallerNumber()); // 客户号码
-		jsonObject.put("__" + Const.CDR_CUSTOMER_NUMBER_TYPE, caller.getTelType()); // 电话类型
-		jsonObject.put("__" + Const.CDR_CUSTOMER_AREA_CODE, areaCode); // 区号
-
+		jsonObject.put(AmiChanVarNameConst.TEL_NUMBER, caller.getCallerNumber()); // 客户号码
+		jsonObject.put(AmiChanVarNameConst.TEL_NUMBER_TYPE, caller.getTelType()); // 电话类型
+		jsonObject.put(AmiChanVarNameConst.TEL_NUMBER_AREA_CODE, areaCode); // 区号
+		
 		out.append(jsonObject.toString());
 		out.flush();
 		out.close();

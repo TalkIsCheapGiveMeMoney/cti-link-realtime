@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.tinet.ctilink.ami.inc.AmiChanVarNameConst;
 import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
 import com.tinet.ctilink.conf.model.EnterpriseHotline;
@@ -120,14 +121,14 @@ public class GetIvrOptionServlet extends HttpServlet {
 		Caller caller = AreaCodeUtil.updateGetAreaCode(customerNumber, gateway);
 		/**来电区号*/
 		String areaCode = caller.getAreaCode();
-		jsonObject.put("__" + Const.CDR_CUSTOMER_NUMBER, caller.getCallerNumber()); //客户号码
-		jsonObject.put("__" + Const.CDR_CUSTOMER_NUMBER_TYPE, caller.getTelType()); //电话类型
-		jsonObject.put("__" + Const.CDR_CUSTOMER_AREA_CODE, areaCode); //区号
+		jsonObject.put("__" + AmiChanVarNameConst.CDR_CUSTOMER_NUMBER, caller.getCallerNumber()); //客户号码
+		jsonObject.put("__" + AmiChanVarNameConst.CDR_CUSTOMER_NUMBER_TYPE, caller.getTelType()); //电话类型
+		jsonObject.put("__" + AmiChanVarNameConst.CDR_CUSTOMER_AREA_CODE, areaCode); //区号
 
 		Integer enterpriseId = null;
 		Trunk trunk = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.TRUNK_NUMBER_TRUNK, ccTrunkNumber), Trunk.class);
 		if(trunk != null){
-			jsonObject.put(Const.NUMBER_TRUNK_AREA_CODE, trunk.getAreaCode());
+			jsonObject.put("__"+AmiChanVarNameConst.NUMBER_TRUNK_AREA_CODE, trunk.getAreaCode());
 		}
 		if(callType.equals(Const.CDR_CALL_TYPE_IB+"")){
 			/* 通过呼入号码去得到它的ivr_id和enterprise_id*/
@@ -137,25 +138,25 @@ public class GetIvrOptionServlet extends HttpServlet {
                         , String.format(CacheKey.ENTERPRISE_HOTLINE_ENTERPRISE_ID_NUMBER_TRUNK, enterpriseId, trunk.getNumberTrunk())
                         , EnterpriseHotline.class);
 				if(enterpriseHotline != null){
-					jsonObject.put(Const.CDR_HOTLINE, enterpriseHotline.getHotline());
+					jsonObject.put(AmiChanVarNameConst.CDR_HOTLINE, enterpriseHotline.getHotline());
 				}
 			}
 		}else if(callType.equals(Const.CDR_CALL_TYPE_OB_WEBCALL+"")){
 			enterpriseId = Integer.parseInt(strEnterpriseId);
 		}
 		if(enterpriseId == null){
-			jsonObject.put(Const.ENTERPRISE_STATUS, Const.ENTITY_STATUS_NO_SERVICE);//enterprise_status 企业目前无中继状态
+			jsonObject.put(AmiChanVarNameConst.ENTERPRISE_STATUS, Const.ENTITY_STATUS_NO_SERVICE);//enterprise_status 企业目前无中继状态
 		}else{
 			//把企业id设置到通道里面，在ivrNode和黑名称接口中有用到
-			jsonObject.put("__" + Const.ENTERPRISE_ID, String.valueOf(enterpriseId));
+			jsonObject.put("__" + AmiChanVarNameConst.CDR_ENTERPRISE_ID, String.valueOf(enterpriseId));
 			EnterpriseHotline enterpriseHotline = redisService.get(Const.REDIS_DB_CONF_INDEX
 					, String.format(CacheKey.ENTERPRISE_HOTLINE_ENTERPRISE_ID_NUMBER_TRUNK, enterpriseId, ccTrunkNumber), EnterpriseHotline.class);
 			if( enterpriseHotline != null && StringUtils.isNotEmpty(enterpriseHotline.getHotline())){
 				//根据numberTrunk获取hotline，当numberTrunk对应的hotline不存在时，用numberTrunk区号加numberTrunk代替
-				jsonObject.put(Const.CDR_HOTLINE, enterpriseHotline.getHotline());
+				jsonObject.put(AmiChanVarNameConst.CDR_HOTLINE, enterpriseHotline.getHotline());
 			}else{
 				if(trunk != null){
-					jsonObject.put(Const.CDR_HOTLINE, trunk.getAreaCode() + trunk.getNumberTrunk());
+					jsonObject.put("__"+AmiChanVarNameConst.CDR_HOTLINE, trunk.getAreaCode() + trunk.getNumberTrunk());
 				}
 			}
 
@@ -166,51 +167,51 @@ public class GetIvrOptionServlet extends HttpServlet {
 				//这里企业状态不对的后面不需要再查询，之后的数据都不再需要
 				if (enterpriseStatus == Const.ENTITY_STATUS_OK) {//0:未开通 1:正常 2:欠费 3:停机 4:注销
 					//jsonObject.put(IvrStaticParameters.ENTERPRISE_CALL_LIMIT_IB, entity.getIbCallLimit());//企业状态
-					jsonObject.put(Const.ENTERPRISE_STATUS, enterpriseStatus);//企业状态
+					jsonObject.put(AmiChanVarNameConst.ENTERPRISE_STATUS, enterpriseStatus);//企业状态
 
 					EnterpriseSetting s;
 					s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
 							, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_RESTRICT_TEL_TYPE), EnterpriseSetting.class);
 					if (s!=null && s.getName().equals(EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_RESTRICT_TEL_TYPE) && (s.getValue().equals("1") || s.getValue().equals("2"))) {//开启了黑白名单功能
-						jsonObject.put(Const.IS_RESTRICT_CHECK, "1");
+						jsonObject.put(AmiChanVarNameConst.IS_RESTRICT_CHECK, "1");
 					}
 					s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
 							, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_IS_RECORD), EnterpriseSetting.class);
 					if (s != null && s.getName().equals(EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_IS_RECORD) && s.getValue().equals("1")) { //开启IVR录音功能
-						jsonObject.put(Const.IS_RECORD, "1");
-						jsonObject.put(Const.RECORD_SCOPE, s.getProperty());
+						jsonObject.put(AmiChanVarNameConst.IS_RECORD, "1");
+						jsonObject.put(AmiChanVarNameConst.RECORD_SCOPE, s.getProperty());
 					}
 					s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
 							, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_IS_CRBT_OPEN), EnterpriseSetting.class);
 					if (s != null && s.getName().equals(EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_IS_CRBT_OPEN) && s.getValue().equals("1")) {  //开启彩铃, 呼入不自动answer
-						jsonObject.put(Const.IS_CRBT_OPEN, "1");
+						jsonObject.put(AmiChanVarNameConst.IS_CRBT_OPEN, "1");
 					}
 					s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
 							, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_RECORD_FILE_USERFIELD), EnterpriseSetting.class);
 					if (s != null ) { 
-						jsonObject.put(Const.RECORD_FILE_USERFIELD, s.getValue());
-						jsonObject.put(Const.MONITOR_TYPE, s.getProperty());
+						jsonObject.put(AmiChanVarNameConst.RECORD_FILE_USERFIELD, s.getValue());
+						jsonObject.put(AmiChanVarNameConst.MONITOR_TYPE, s.getProperty());
 					}
 
 					if(callType.equals(String.valueOf(Const.CDR_CALL_TYPE_OB_WEBCALL))){
 
 						if(StringUtils.isNotEmpty(webcallIvrId)){
-							jsonObject.put("__" + Const.IVR_ID, webcallIvrId);
-							jsonObject.put(Const.VALID_IVR, "1");
+							jsonObject.put("__" + AmiChanVarNameConst.IVR_ID, webcallIvrId);
+							jsonObject.put(AmiChanVarNameConst.VALID_IVR, "1");
 						}else{
 							s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
 									, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_WEBCALL_DEFAULT_IVR), EnterpriseSetting.class);
-							jsonObject.put("__" + Const.IVR_ID, s.getValue());
-							jsonObject.put(Const.VALID_IVR, "1");
+							jsonObject.put("__" + AmiChanVarNameConst.IVR_ID, s.getValue());
+							jsonObject.put(AmiChanVarNameConst.VALID_IVR, "1");
 						}
 					}else{//按照呼入检查
 
 						s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
 								, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_CALL_LIMIT_IB), EnterpriseSetting.class);
 						if(s !=null && StringUtils.isNotEmpty(s.getValue())){
-							jsonObject.put(Const.ENTERPRISE_SETTING_NAME_CALL_LIMIT_IB, s.getValue());
+							jsonObject.put(AmiChanVarNameConst.ENTERPRISE_SETTING_NAME_CALL_LIMIT_IB, s.getValue());
 						}else{
-							jsonObject.put(Const.ENTERPRISE_SETTING_NAME_CALL_LIMIT_IB, 0);
+							jsonObject.put(AmiChanVarNameConst.ENTERPRISE_SETTING_NAME_CALL_LIMIT_IB, 0);
 						}
 						Date nowDate = new Date();
 						Calendar cc = Calendar.getInstance();
@@ -312,26 +313,26 @@ public class GetIvrOptionServlet extends HttpServlet {
 								if ((accordingWeek || accordingSpecialDate) || StringUtils.isEmpty(ruleTime)) {
 									if (areaBl || StringUtils.isEmpty(ruleAreaNumber)) {
 										if (trunkBl || StringUtils.isEmpty(ruleTrunkNumber)) {
-											jsonObject.put("" + Const.IVR_ROUTER_TYPE, ruleType);
+											jsonObject.put("" + AmiChanVarNameConst.IVR_ROUTER_TYPE, ruleType);
 											switch (ruleType) {
 												case 1://******************1:IVR*****************************//*
 
-													jsonObject.put("__" + Const.IVR_ID, ruleProperty);
+													jsonObject.put("__" + AmiChanVarNameConst.IVR_ID, ruleProperty);
 													List<EnterpriseIvr> enterpriseIvrList = redisService.getList(Const.REDIS_DB_CONF_INDEX
 															, String.format(CacheKey.ENTERPRISE_IVR_ENTERPRISE_ID_IVR_ID, enterpriseId, Integer.parseInt(ruleProperty)), EnterpriseIvr.class);
 													if (enterpriseIvrList == null || enterpriseIvrList.size() == 0) {
-														jsonObject.put(Const.VALID_IVR, "0");
+														jsonObject.put(AmiChanVarNameConst.VALID_IVR, "0");
 													} else {
-														jsonObject.put(Const.VALID_IVR, "1");
+														jsonObject.put(AmiChanVarNameConst.VALID_IVR, "1");
 													}
 													found = true;
 													break;
 												case 2://*****************2:固定电话 **************************//*
-													jsonObject.put(Const.IVR_ROUTER_TEL, ruleProperty);
+													jsonObject.put(AmiChanVarNameConst.IVR_ROUTER_TEL, ruleProperty);
 													found = true;
 													break;
 												case 3://*****************3:分机*******************************//*
-													jsonObject.put(Const.IVR_ROUTER_EXTEN, ruleProperty);
+													jsonObject.put(AmiChanVarNameConst.IVR_ROUTER_EXTEN, ruleProperty);
 													found = true;
 													break;
 											}
@@ -347,7 +348,7 @@ public class GetIvrOptionServlet extends HttpServlet {
 					}
 
 				} else {
-					jsonObject.put(Const.ENTERPRISE_STATUS, enterpriseStatus);
+					jsonObject.put(AmiChanVarNameConst.ENTERPRISE_STATUS, enterpriseStatus);
 				}
 			} else {
 				logger.debug("数据库查询相应数据为空！请检查表：businesses   ");

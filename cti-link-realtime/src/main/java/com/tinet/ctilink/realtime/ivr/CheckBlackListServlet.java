@@ -8,18 +8,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.tinet.ctilink.cache.CacheKey;
-import com.tinet.ctilink.cache.RedisService;
-import com.tinet.ctilink.inc.EnterpriseSettingConst;
-import com.tinet.ctilink.json.JSONObject;
-import com.tinet.ctilink.conf.model.EnterpriseSetting;
-import com.tinet.ctilink.conf.model.RestrictTel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.tinet.ctilink.ami.inc.AmiChanVarNameConst;
+import com.tinet.ctilink.cache.CacheKey;
+import com.tinet.ctilink.cache.RedisService;
+import com.tinet.ctilink.conf.model.EnterpriseSetting;
+import com.tinet.ctilink.conf.model.RestrictTel;
 import com.tinet.ctilink.inc.Const;
+import com.tinet.ctilink.inc.EnterpriseSettingConst;
+import com.tinet.ctilink.json.JSONObject;
 
 /**
  *@Title CheckBlackList.java
@@ -109,7 +110,7 @@ public class CheckBlackListServlet extends HttpServlet {
 			logger.debug("调用第三方接口失败-------getEntSetByName");
 		}
 
-		jsonObject.put(Const.IS_RESTRICT_TEL, isRestrictTel);
+		jsonObject.put(AmiChanVarNameConst.IS_RESTRICT_TEL, isRestrictTel);
 		out.append(jsonObject.toString());
 		out.flush();
 		out.close();
