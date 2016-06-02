@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.tinet.ctilink.inc.EnterpriseSettingConst;
+import com.tinet.ctilink.inc.SystemSettingConst;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,10 +50,10 @@ public class GetQueueRememberServlet extends HttpServlet {
         	
         Integer rememberTime;
         EnterpriseSetting callRememberTimeEnterpriseSetting = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME
-				, Integer.parseInt(enterpriseId), Const.ENTERPRISE_SETTING_NAME_IB_CALL_REMEMBER_TIME), EnterpriseSetting.class);
+				, Integer.parseInt(enterpriseId), EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_IB_CALL_REMEMBER_TIME), EnterpriseSetting.class);
         if(callRememberTimeEnterpriseSetting == null){
         	SystemSetting callRememberTimeSystemSetting = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.SYSTEM_SETTING_NAME
-				, Const.SYSTEM_SETTING_NAME_IB_CALL_REMEMBER_TIME), SystemSetting.class);
+				, SystemSettingConst.SYSTEM_SETTING_NAME_IB_CALL_REMEMBER_TIME), SystemSetting.class);
         	rememberTime = Integer.parseInt(callRememberTimeSystemSetting.getValue());
         }else{
         	rememberTime = Integer.parseInt(callRememberTimeEnterpriseSetting.getValue());
