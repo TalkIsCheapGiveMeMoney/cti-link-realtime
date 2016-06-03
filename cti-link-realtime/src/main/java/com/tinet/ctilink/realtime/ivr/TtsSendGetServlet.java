@@ -1,6 +1,7 @@
 package com.tinet.ctilink.realtime.ivr;
 
 import com.github.pagehelper.StringUtil;
+import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
 import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONObject;
@@ -59,9 +60,9 @@ public class TtsSendGetServlet extends HttpServlet {
         if (StringUtils.isNotEmpty(res)) {
             jsonObject.put("TTS_FILE", res);
             jsonObject.put("TTS_URL_LIST", ttsUrlList.toString());
-            redisService.incrby(Const.REDIS_DB_CTI_INDEX, "system.tts.success_count", 1);
+            redisService.incrby(Const.REDIS_DB_NON_CONFIGURE_INDEX, CacheKey.TTS_SUCCESS_COUNT, 1);
         } else {
-            redisService.incrby(Const.REDIS_DB_CTI_INDEX, "system.tts.fail_count", 1);
+            redisService.incrby(Const.REDIS_DB_NON_CONFIGURE_INDEX, CacheKey.TTS_FAIL_COUNT, 1);
         }
 
         //TODO 日志记录到kv
