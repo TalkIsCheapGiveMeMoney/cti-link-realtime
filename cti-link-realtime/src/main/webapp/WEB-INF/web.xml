@@ -129,6 +129,15 @@
 	</servlet-mapping>
 
 	<servlet>
+		<servlet-name>getCdrUserFieldServlet</servlet-name>
+		<servlet-class>com.tinet.ctilink.web.DelegatingServletProxy</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>getCdrUserFieldServlet</servlet-name>
+		<url-pattern>/interface/ivr/GetCdrUserField</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
 		<servlet-name>getClidServlet</servlet-name>
 		<servlet-class>com.tinet.ctilink.web.DelegatingServletProxy</servlet-class>
 	</servlet>
