@@ -3,7 +3,6 @@ package com.tinet.ctilink.realtime.ivr;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -64,14 +63,14 @@ public class GetInvestigationServlet extends HttpServlet {
 				if (jsonObj != null) {
 					if (investigation.getAction() == 1) { /** 播放节点 */
 						jsonObject.put("sv_" + investigation.getPath() + "_action", investigation.getAction());
-						jsonObject.put("sv_" + investigation.getAnchor() + "_anchor", investigation.getAnchor());
+						jsonObject.put("sv_" + investigation.getPath() + "_anchor", investigation.getAnchor());
 						jsonObject.put("sv_" + investigation.getPath() + "_play_type", jsonObj.get("play_type")); // 播放类型
 						jsonObject.put("sv_" + investigation.getPath() + "_play_file", jsonObj.get("play_file")); // 播放类型对应的值
 						jsonObject.put("sv_" + investigation.getPath() + "_next", jsonObj.get("next")); // 下一跳
 					}
 					if (investigation.getAction() == 2) { /** 选择节点 */
 						jsonObject.put("sv_" + investigation.getPath() + "_action", investigation.getAction());
-						jsonObject.put("sv_" + investigation.getAnchor() + "_anchor", investigation.getAnchor());
+						jsonObject.put("sv_" + investigation.getPath() + "_anchor", investigation.getAnchor());
 						jsonObject.put("sv_" + investigation.getPath() + "_select_file", jsonObj.get("select_file"));
 						jsonObject.put("sv_" + investigation.getPath() + "_select_retries", jsonObj.get("select_retries"));
 						JSONArray jsonSelectArray = jsonObj.getJSONArray("select");
