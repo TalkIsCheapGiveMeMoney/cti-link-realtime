@@ -31,6 +31,7 @@ public class IdentifyRealtime {
 
     public String queryByHttpServletRequest(HttpServletRequest request) {
         String id = request.getParameter("id");
+        String endpoint = request.getParameter("endpoint");
         if (StringUtils.isNotEmpty(id)) {
             String fromIp = null;
             String fromName = null;
@@ -74,6 +75,28 @@ public class IdentifyRealtime {
                 	return this.dataRes(gateway);
                 }
             }
+        }else if(StringUtils.isNotEmpty(endpoint)){
+        	List<SipProxy> sipProxyList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.SIP_PROXY, SipProxy.class);
+        	String resStr = "";
+        	for (SipProxy sipProxy : sipProxyList) {
+        		if(sipProxy.getName().equals(endpoint)){
+        			resStr = this.dataRes(sipProxy);
+        			break;
+        		}
+            }
+        	if(StringUtils.isNotEmpty(resStr)){
+        		return resStr;
+        	}else{
+        		List<Gateway> gatewayList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.GATEWAY, Gateway.class);
+                for (Gateway g : gatewayList) {
+                	if(g.getName().equals(endpoint)){
+            			resStr = this.dataRes(g);
+            			break;
+                	}
+                }
+                return resStr;
+        	}
+        	
         }else{
         	 List<SipProxy> sipProxyList = redisService.getList(Const.REDIS_DB_CONF_INDEX, CacheKey.SIP_PROXY, SipProxy.class);
              String resStr = "";
