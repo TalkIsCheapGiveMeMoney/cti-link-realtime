@@ -15,6 +15,7 @@ import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONArray;
 import com.tinet.ctilink.json.JSONObject;
 import com.tinet.ctilink.conf.model.EnterpriseInvestigation;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,20 +58,19 @@ public class GetInvestigationServlet extends HttpServlet {
 		// 根据企业id或者对于的满意度调查配置
 		List<EnterpriseInvestigation> eninlists = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_INVESTIGATION_ENTERPRISE_ID, Integer.parseInt(enterpriseId))
 				, EnterpriseInvestigation.class);
+
 		if (eninlists!= null && eninlists.size() > 0) {
 			for (EnterpriseInvestigation investigation : eninlists) {
 				JSONObject jsonObj = JSONObject.fromObject(investigation.getProperty());
 				if (jsonObj != null) {
 					if (investigation.getAction() == 1) { /** 播放节点 */
 						jsonObject.put("sv_" + investigation.getPath() + "_action", investigation.getAction());
-						jsonObject.put("sv_" + investigation.getPath() + "_anchor", investigation.getAnchor());
 						jsonObject.put("sv_" + investigation.getPath() + "_play_type", jsonObj.get("play_type")); // 播放类型
 						jsonObject.put("sv_" + investigation.getPath() + "_play_file", jsonObj.get("play_file")); // 播放类型对应的值
 						jsonObject.put("sv_" + investigation.getPath() + "_next", jsonObj.get("next")); // 下一跳
 					}
 					if (investigation.getAction() == 2) { /** 选择节点 */
 						jsonObject.put("sv_" + investigation.getPath() + "_action", investigation.getAction());
-						jsonObject.put("sv_" + investigation.getPath() + "_anchor", investigation.getAnchor());
 						jsonObject.put("sv_" + investigation.getPath() + "_select_file", jsonObj.get("select_file"));
 						jsonObject.put("sv_" + investigation.getPath() + "_select_retries", jsonObj.get("select_retries"));
 						JSONArray jsonSelectArray = jsonObj.getJSONArray("select");
@@ -79,6 +79,19 @@ public class GetInvestigationServlet extends HttpServlet {
 							String key = jsonTmp.get("key").toString();
 							String next = jsonTmp.get("next").toString();
 							jsonObject.put("sv_" + investigation.getPath() + "_select_" + key + "_next", next);
+						}
+					}
+				}
+
+				//锚点配置
+				if (StringUtils.isNotEmpty(investigation.getAnchor())) {
+					JSONArray jsonArray = JSONArray.fromObject(investigation.getAnchor());
+					if (jsonArray != null) {
+						jsonObject.put("sv_" + investigation.getPath() + "_anchor_count", jsonArray.size());
+						for (int i = 0; i < jsonArray.size(); i++) {
+							JSONObject jsonTemp = jsonArray.getJSONObject(i);
+							jsonObject.put("sv_" + investigation.getPath() + "_anchor_event_" + (i + 1), jsonTemp.getString("event"));
+							jsonObject.put("sv_" + investigation.getPath() + "_anchor_data_" + (i + 1), jsonTemp.getString("data"));
 						}
 					}
 				}

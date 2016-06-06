@@ -96,8 +96,6 @@ public class GetIvrNodeServlet extends HttpServlet {
 		String areaCode = request.getParameter("customerAreaCode");
 
 		JSONObject jsonObject = getIvrNodeJSON(Integer.parseInt(ccEnterpriseId), Integer.parseInt(ccIvrId), areaCode);
-		//获取ivr描点配置
-		getIvrAnchorJSON(jsonObject, Integer.parseInt(ccEnterpriseId), Integer.parseInt(ccIvrId));
 
 		String r = jsonObject.toString();
 		out.append(r);
@@ -444,40 +442,6 @@ public class GetIvrNodeServlet extends HttpServlet {
 			logger.debug("通过通道传过来的企业id和ivrid去查询相关的IVR节点配置 失败，请查询表：EnterpriseIvr");
 		}
 		return jsonObject;
-	}
-
-	/**
-	 * 查询ivr描点配置
-	 * @param jsonObject 返回的jsonObject
-	 * @param enterpriseId 企业编号
-	 * @param ivrId ivrId
-	 */
-	private void getIvrAnchorJSON(JSONObject jsonObject, int enterpriseId, int ivrId) {
-		List<CtiLinkEnterpriseIvrAnchor> enterpriseIvrAnchorList = redisService.getList(Const.REDIS_DB_CONF_INDEX
-				, String.format(CacheKey.ENTERPRISE_IVR_ANCHOR_ENTERPRISE_ID_IVR_ID, enterpriseId, ivrId), CtiLinkEnterpriseIvrAnchor.class);
-		if (enterpriseIvrAnchorList != null && !enterpriseIvrAnchorList.isEmpty()) {
-			int i = 0;
-			String path = null;
-			for (CtiLinkEnterpriseIvrAnchor enterpriseIvrAnchor : enterpriseIvrAnchorList) {
-				if (path == null) {
-					path = enterpriseIvrAnchor.getPath();
-				}
-
-				if (path.equals(enterpriseIvrAnchor.getPath())) {
-					i++;
-					jsonObject.put(enterpriseIvrAnchor.getPath() + "_anchor_" + i + "_event", enterpriseIvrAnchor.getEvent());
-					jsonObject.put(enterpriseIvrAnchor.getPath() + "_anchor_" + i + "_data", enterpriseIvrAnchor.getData());
-				} else {
-					jsonObject.put(path + "_anchor_count", i);
-
-					i = 1;
-					path = enterpriseIvrAnchor.getPath();
-					jsonObject.put(enterpriseIvrAnchor.getPath() + "_anchor_" + i + "_event", enterpriseIvrAnchor.getEvent());
-					jsonObject.put(enterpriseIvrAnchor.getPath() + "_anchor_" + i + "_data", enterpriseIvrAnchor.getData());
-				}
-			}
-			jsonObject.put(path + "_anchor_count", i);
-		}
 	}
 
 	/**查找数组的一个方法*/
