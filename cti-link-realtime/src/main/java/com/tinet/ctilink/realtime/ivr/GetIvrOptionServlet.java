@@ -192,7 +192,12 @@ public class GetIvrOptionServlet extends HttpServlet {
 						jsonObject.put(AmiChanVarNameConst.RECORD_FILE_USERFIELD, s.getValue());
 						jsonObject.put(AmiChanVarNameConst.MONITOR_TYPE, s.getProperty());
 					}
-
+					s = redisService.get(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_SETTING_ENTERPRISE_ID_NAME, enterpriseId
+							, EnterpriseSettingConst.ENTERPRISE_SETTING_NAME_MP3_RATIO), EnterpriseSetting.class);
+					if (s != null ) { 
+						jsonObject.put("__" + AmiChanVarNameConst.MP3_RATIO, s.getValue());
+					}
+					
 					if(callType.equals(String.valueOf(Const.CDR_CALL_TYPE_OB_WEBCALL))){
 
 						if(StringUtils.isNotEmpty(webcallIvrId)){
