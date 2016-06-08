@@ -70,7 +70,7 @@ public class GetHangupSetServlet extends HttpServlet {
 			type = Const.ENTERPRISE_PUSH_TYPE_HANGUP_OB;
 		}
 
-		List<EnterprisePushAction> hangupActionList = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_HANGUP_ACTION_ENTERPRISE_ID_TYPE
+		List<EnterprisePushAction> hangupActionList = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_PUSH_ACTION_ENTERPRISE_ID_TYPE
 				, Integer.parseInt(enterpriseId), type), EnterprisePushAction.class);
 		if (hangupActionList != null) {
 			jsonObject.put("hangup_action_count", hangupActionList.size());
