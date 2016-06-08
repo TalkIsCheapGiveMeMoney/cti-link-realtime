@@ -11,12 +11,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.tinet.ctilink.cache.CacheKey;
 import com.tinet.ctilink.cache.RedisService;
+import com.tinet.ctilink.conf.model.EnterprisePushAction;
 import com.tinet.ctilink.inc.Const;
 import com.tinet.ctilink.json.JSONObject;
 import com.tinet.ctilink.conf.model.EnterpriseHangupSet;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import sun.misc.BASE64Decoder;
 
 @Component
 public class GetHangupSetServlet extends HttpServlet {
@@ -39,8 +42,7 @@ public class GetHangupSetServlet extends HttpServlet {
 		String callType = request.getParameter("callType");
 		Integer type;
 		// 判断外呼或呼入挂机推送
-		if (String.valueOf(Const.CDR_CALL_TYPE_IB).equals(callType)
-				|| String.valueOf(Const.CDR_CALL_TYPE_OB_WEBCALL).equals(callType)) {
+		if (String.valueOf(Const.CDR_CALL_TYPE_IB).equals(callType)) {
 			type = Const.HANGUP_SET_TYPE_IB;
 		} else {
 			type = Const.HANGUP_SET_TYPE_OB;
@@ -59,6 +61,35 @@ public class GetHangupSetServlet extends HttpServlet {
 			}
 		}else{
 			jsonObject.put("hangup_set_count", 0);
+		}
+
+		//挂机推送设置
+		if (String.valueOf(Const.CDR_CALL_TYPE_IB).equals(callType)) {
+			type = Const.ENTERPRISE_PUSH_TYPE_HANGUP_IB;
+		} else {
+			type = Const.ENTERPRISE_PUSH_TYPE_HANGUP_OB;
+		}
+
+		List<EnterprisePushAction> hangupActionList = redisService.getList(Const.REDIS_DB_CONF_INDEX, String.format(CacheKey.ENTERPRISE_HANGUP_ACTION_ENTERPRISE_ID_TYPE
+				, Integer.parseInt(enterpriseId), type), EnterprisePushAction.class);
+		if (hangupActionList != null) {
+			jsonObject.put("hangup_action_count", hangupActionList.size());
+			for (int i = 0; i < hangupActionList.size(); i++) {
+				EnterprisePushAction hangupAction = hangupActionList.get(i);
+				String paramName[] = StringUtils.split(hangupAction.getParamName(), ",");
+				String paramVariable[] = StringUtils.split(hangupAction.getParamVariable(), ",");
+				jsonObject.put("hangup_action_" + i + "_param_count", paramName.length);
+				jsonObject.put("hangup_action_" + i + "_id", hangupAction.getId());
+				BASE64Decoder base64Decoder = new BASE64Decoder();
+				for (int j = 0; j < paramName.length; j++) {
+					String param = new String(base64Decoder.decodeBuffer(paramName[j]));
+					String variable = new String(base64Decoder.decodeBuffer(paramVariable[j]));
+					jsonObject.put("hangup_action_" + i + "_param_" + j + "_name", param);
+					jsonObject.put("hangup_action_" + i + "_param_" + j + "_value", variable);
+				}
+			}
+		} else {
+			jsonObject.put("hangup_action_count", 0);
 		}
 		out.append(jsonObject.toString());
 		out.flush();
